@@ -1,4 +1,5 @@
 ﻿@page "/counter"
+@inject IMessageService _message
 
 <PageTitle>Counter</PageTitle>
 
@@ -8,7 +9,50 @@
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
+<Button Type="ButtonType.Primary">Hello World!</Button>
+
+<Button Type="ButtonType.Primary" OnClick="@ShowModal">
+    Open Modal with async logic
+</Button>
+
+<Modal Title="@("Title")"
+       Visible="@_visible"
+       OnOk="@HandleOk"
+       OnCancel="@HandleCancel"
+       ConfirmLoading="@_confirmLoading">
+    <p>@_modalText</p>
+</Modal>
+
 @code {
+    bool _visible = false;
+    bool _confirmLoading = false;
+    string _modalText = "Content of the modal";
+
+    private void ShowModal()
+    {
+        _visible = true;
+    }
+
+
+    private async Task HandleOk(MouseEventArgs e)
+    {
+        _modalText = "The modal will be closed after two seconds";
+        _message.Info("The modal will be closed after two seconds");
+
+        _confirmLoading = true;
+        StateHasChanged();
+        await Task.Delay(2000);
+        _visible = false;
+        _confirmLoading = false;
+    }
+
+    private void HandleCancel(MouseEventArgs e)
+    {
+        Console.WriteLine("Clicked cancel button");
+        _message.Info("Clicked cancel button");
+        _visible = false;
+    }
+
     private int currentCount = 0;
 
     private void IncrementCount()
