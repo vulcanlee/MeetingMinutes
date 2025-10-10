@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="ProjectAssistant.Business/ProjectAssistant.Business.csproj" />
+  <Project Path="ProjectAssistant.DataModel/ProjectAssistant.DataModel.csproj" />
+  <Project Path="ProjectAssistant.EntityModel/ProjectAssistant.EntityModel.csproj" />
+  <Project Path="ProjectAssistant.Share/ProjectAssistant.Share.csproj" />
+  <Project Path="ProjectAssistant.Web/ProjectAssistant.Web.csproj" />
+</Solution>
