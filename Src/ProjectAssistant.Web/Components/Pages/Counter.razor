@@ -1,6 +1,8 @@
 ﻿@page "/counter"
 @inject IMessageService _message
 
+@inject CounterViewModel ViewModel
+
 <PageTitle>Counter</PageTitle>
 
 <h1>Counter</h1>
@@ -10,6 +12,8 @@
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 <Button Type="ButtonType.Primary">Hello World!</Button>
+
+<Button Type="ButtonType.Primary" @onclick="ViewModel.OnDatabaseTestAsync">資料庫測試</Button>
 
 <Button Type="ButtonType.Primary" OnClick="@ShowModal">
     Open Modal with async logic
