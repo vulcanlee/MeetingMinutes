@@ -416,3 +416,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+/Src/ProjectAssistant.Web/BackendDB.db
+/Src/ProjectAssistant.Web/BackendDB.db-shm
+/Src/ProjectAssistant.Web/BackendDB.db-wal
