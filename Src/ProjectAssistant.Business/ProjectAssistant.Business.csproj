@@ -1,18 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="15.0.1" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="15.0.1" />
+		<PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
+		<PackageReference Include="FFMpegCore" Version="5.2.0" />
+		<PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.43.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ProjectAssistant.DataModel\ProjectAssistant.DataModel.csproj" />
-    <ProjectReference Include="..\ProjectAssistant.EntityModel\ProjectAssistant.EntityModel.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ProjectAssistant.DataModel\ProjectAssistant.DataModel.csproj" />
+		<ProjectReference Include="..\ProjectAssistant.EntityModel\ProjectAssistant.EntityModel.csproj" />
+	</ItemGroup>
 
 </Project>
