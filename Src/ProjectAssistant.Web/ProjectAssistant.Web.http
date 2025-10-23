@@ -1,0 +1,32 @@
+﻿@ProjectAssistant.Web_HostAddress = https://localhost:7037
+
+POST {{ProjectAssistant.Web_HostAddress}}/api/chatai
+Content-Type: application/json
+
+{
+  "prompt":"一加一等於多少"
+}
+
+###
+
+POST {{ProjectAssistant.Web_HostAddress}}/api/chatai
+Content-Type: application/json
+
+
+"一加一等於多少"
+
+###
+
+POST {{ProjectAssistant.Web_HostAddress}}/api/chatai
+Content-Type: application/json
+
+"string"
+
+###
+
+POST {{ProjectAssistant.Web_HostAddress}}/api/chatai
+Content-Type: application/json
+
+"string"
+
+###

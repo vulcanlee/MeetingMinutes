@@ -1,5 +1,6 @@
 using AntDesign;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using ProjectAssistant.Business.Helpers;
 using ProjectAssistant.Business.Services.Database;
 using ProjectAssistant.Business.Services.Options;
@@ -23,6 +24,12 @@ namespace ProjectAssistant.Web
                 .AddInteractiveServerComponents();
 
             builder.Services.AddAntDesign();
+
+            builder.Services.AddControllers();
+            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+            builder.Services.AddOpenApi();
+            builder.Services.AddSwaggerGen();
+
 
 
             #region EF Core «Å§i
@@ -78,6 +85,8 @@ namespace ProjectAssistant.Web
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
             app.UseHttpsRedirection();
@@ -85,6 +94,7 @@ namespace ProjectAssistant.Web
             app.UseAntiforgery();
 
             app.MapStaticAssets();
+            app.MapControllers();
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 

@@ -8,10 +8,11 @@ namespace ProjectAssistant.Business.Services.Options;
 
 public class SystemSettingsConfigurationService
 {
-    private readonly SystemSettings Value;
+    public SystemSettings Value { get; }
 
     public SystemSettingsConfigurationService(IOptions<SystemSettings> options)
     {
         this.Value = options.Value;
     }
+
 }
