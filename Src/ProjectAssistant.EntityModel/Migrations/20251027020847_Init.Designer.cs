@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectAssistant.EntityModel;
 
@@ -10,9 +11,11 @@ using ProjectAssistant.EntityModel;
 namespace ProjectAssistant.EntityModel.Migrations
 {
     [DbContext(typeof(BackendDBContext))]
-    partial class BackendDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251027020847_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

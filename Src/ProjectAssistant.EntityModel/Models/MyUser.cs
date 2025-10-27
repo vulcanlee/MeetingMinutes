@@ -19,5 +19,6 @@ public class MyUser
     public string? Email { get; set; }
     public bool IsAdmin { get; set; } = false;
     public string RoleJson { get; set; }
+
     public ICollection<MyUserRoleView> MyUserRoleView { get; set; }= new List<MyUserRoleView>();
 }

@@ -20,6 +20,12 @@ public partial class BackendDBContext : DbContext
     public virtual DbSet<MyUser> MyUser { get; set; }
     public virtual DbSet<RoleView> RoleView { get; set; }
     public virtual DbSet<MyUserRoleView> MyUserRoleView { get; set; }
+    public virtual DbSet<Project> Project { get; set; }
+    public virtual DbSet<MyTask> MyTask { get; set; }
+    public virtual DbSet<GanttChart> GanttChart { get; set; }
+    public virtual DbSet<Meeting> Meeting { get; set; }
+    public virtual DbSet<ChatHistory> ChatHistory { get; set; }
+    public virtual DbSet<RecordedMediaFile> RecordedMediaFile { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

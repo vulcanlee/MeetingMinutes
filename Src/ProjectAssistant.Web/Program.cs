@@ -1,4 +1,4 @@
-using AntDesign;
+ï»¿using AntDesign;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectAssistant.Business.Helpers;
@@ -32,7 +32,7 @@ namespace ProjectAssistant.Web
 
 
 
-            #region EF Core «Å§i
+            #region EF Core å®£å‘Š
             var ctmsSettings = builder.Configuration
                 .GetSection(nameof(SystemSettings))
                 .Get<SystemSettings>();
@@ -44,7 +44,7 @@ namespace ProjectAssistant.Web
             #endregion
 
 
-            #region µù¥U±M®×«È¨î¥ÎªºªA°È
+            #region è¨»å†Šå°ˆæ¡ˆå®¢åˆ¶ç”¨çš„æœå‹™
 
             #region Repository
             builder.Services.AddTransient<RoleViewService>();
@@ -55,24 +55,24 @@ namespace ProjectAssistant.Web
             builder.Services.AddTransient<CounterViewModel>();
             #endregion
 
-            #region Other ¨ä¥L
+            #region Other å…¶ä»–
             builder.Services.AddTransient<SystemSettingsConfigurationService>();
             #endregion
 
             #endregion
 
-            #region ¥[¤J³]©w±j«¬§Oª`¤J«Å§i
+            #region åŠ å…¥è¨­å®šå¼·å‹åˆ¥æ³¨å…¥å®£å‘Š
             builder.Services.Configure<SystemSettings>(builder.Configuration
                 .GetSection(nameof(SystemSettings)));
             #endregion
 
-            #region AutoMapper ¨Ï¥Îªº«Å§i
+            #region AutoMapper ä½¿ç”¨çš„å®£å‘Š
             builder.Services.AddAutoMapper(c => c.AddProfile<AutoMapping>());
             #endregion
 
             var app = builder.Build();
 
-            #region ¸ê®Æ®wªº Migration
+            #region è³‡æ–™åº«çš„ Migration
             using var scope = app.Services.CreateScope();
             using var dbContext = scope.ServiceProvider.GetRequiredService<BackendDBContext>();
             dbContext.Database.Migrate();
