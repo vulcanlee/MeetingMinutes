@@ -1,0 +1,64 @@
+﻿<EditForm Model="@ViewModel.CurrentRecord">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputWatcher EditContextActionChanged="@ViewModel.OnEditContestChanged" />
+
+    <div>
+        <div class="row">
+            <div class="col mb-3">
+                <label class="form-label">名稱</label>
+                <Input Placeholder="Basic usage" @bind-Value="@ViewModel.CurrentRecord.Name" />
+                <ValidationMessage For="@(() => ViewModel.CurrentRecord.Name)" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col mb-3">
+                <label class="form-label">描述</label>
+                <Input Placeholder="Basic usage" @bind-Value="@ViewModel.CurrentRecord.Description" />
+                <ValidationMessage For="@(() => ViewModel.CurrentRecord.Description)" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col mb-3">
+                <label class="form-label">開始日期</label>
+                <br />
+                <DatePicker TValue="DateTime" Picker="DatePickerType.Date" @bind-Value="@ViewModel.CurrentRecord.StartDate" />
+                <ValidationMessage For="@(() => ViewModel.CurrentRecord.StartDate)" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col mb-3">
+                <label class="form-label">完成日期</label>
+                <br />
+                <DatePicker TValue="DateTime" Picker="DatePickerType.Date" @bind-Value="@ViewModel.CurrentRecord.EndDate" />
+                <ValidationMessage For="@(() => ViewModel.CurrentRecord.EndDate)" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col mb-3">
+                <label class="form-label">完成百分比</label>
+                <br />
+                <AntDesign.InputNumber @bind-Value="ViewModel.CurrentRecord.CompletionPercentage" Min="0" Max="100" DefaultValue="0" PlaceHolder="輸入完成百分比"></AntDesign.InputNumber>
+                <ValidationMessage For="@(() => ViewModel.CurrentRecord.CompletionPercentage)" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col mb-3">
+                <label class="form-label">負責人</label>
+                <Input Placeholder="Basic usage" @bind-Value="@ViewModel.CurrentRecord.Owner" />
+                <ValidationMessage For="@(() => ViewModel.CurrentRecord.Owner)" />
+            </div>
+        </div>
+
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public ProjectViewModel ViewModel { get; set; } = null!;
+}

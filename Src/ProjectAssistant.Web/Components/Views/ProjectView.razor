@@ -1,0 +1,54 @@
+﻿@inject ProjectViewModel ViewModel
+
+<div>
+    <div>
+        <Table @ref="table"
+               TItem="ProjectAdapterModel"
+               DataSource="@ViewModel.Datas"
+               OnChange=@ViewModel.OnTableChange
+               @bind-PageIndex="@ViewModel.PageIndex"
+               @bind-PageSize="@ViewModel.PageSize"
+               @bind-Total=@ViewModel.Total>
+            <TitleTemplate>
+                <Flex Justify="FlexJustify.End" Gap="@("10")">
+                    <Button Type="ButtonType.Primary" OnClick="() => ViewModel.OnAddNewRecord()">新增</Button>
+                </Flex>
+            </TitleTemplate>
+            <ColumnDefinitions Context="row">
+                <Column TData="string" DataIndex="@nameof(ProjectAdapterModel.Name)" Title="名稱" />
+            </ColumnDefinitions>
+        </Table>
+    </div>
+
+    <div>
+        <Modal Title=@ViewModel.EditRecordTitle Width="@("70%")"
+               Visible="@ViewModel.IsShowEditRecord"
+               OnOk="@ViewModel.OnRecordEditConfirm"
+               OnCancel="@ViewModel.OnRecordEditCancel">
+            <ProjectForm ViewModel="ViewModel" />
+        </Modal>
+
+    </div>
+</div>
+
+
+@code {
+
+    ITable table;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetDataAsync(firstRender);
+        }
+    }
+    async Task GetDataAsync(bool firstRender = false)
+    {
+        await ViewModel.GetAllAsync();
+        if (firstRender == true)
+        {
+            StateHasChanged();
+        }
+    }
+}

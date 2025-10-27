@@ -32,10 +32,10 @@ namespace ProjectAssistant.Web
             builder.Services.AddSwaggerGen();
 
             #region EF Core 宣告
-            var ctmsSettings = builder.Configuration
+            var configurationSettings = builder.Configuration
                 .GetSection(nameof(SystemSettings))
                 .Get<SystemSettings>();
-            var SQLiteDefaultConnection = ctmsSettings.ConnectionStrings.SQLiteDefaultConnection;
+            var SQLiteDefaultConnection = configurationSettings.ConnectionStrings.SQLiteDefaultConnection;
 
             builder.Services.AddDbContext<BackendDBContext>(options =>
                 options.UseSqlite(SQLiteDefaultConnection),
@@ -60,6 +60,7 @@ namespace ProjectAssistant.Web
 
             #region ViewModel
             builder.Services.AddTransient<CounterViewModel>();
+            builder.Services.AddTransient<ProjectViewModel>();
             #endregion
 
             #region Other 其他
