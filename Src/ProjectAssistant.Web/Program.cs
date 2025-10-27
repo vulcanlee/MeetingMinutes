@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectAssistant.Business.Helpers;
+using ProjectAssistant.Business.Repositories;
 using ProjectAssistant.Business.Services.Database;
 using ProjectAssistant.Business.Services.Options;
 using ProjectAssistant.DataModel.Models.Configurations;
@@ -30,8 +31,6 @@ namespace ProjectAssistant.Web
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
 
-
-
             #region EF Core 宣告
             var ctmsSettings = builder.Configuration
                 .GetSection(nameof(SystemSettings))
@@ -43,12 +42,20 @@ namespace ProjectAssistant.Web
                 ServiceLifetime.Scoped);
             #endregion
 
-
             #region 註冊專案客制用的服務
 
-            #region Repository
+            #region Service
             builder.Services.AddTransient<RoleViewService>();
             builder.Services.AddTransient<MyUserService>();
+            #endregion
+
+            #region Repository
+            builder.Services.AddTransient<ProjectRepository>();
+            builder.Services.AddTransient<ChatHistoryRepository>();
+            builder.Services.AddTransient<GanttChartRepository>();
+            builder.Services.AddTransient<MeetingRepository>();
+            builder.Services.AddTransient<MyTaskRepository>();
+            builder.Services.AddTransient<RecordedMediaFileRepository>();
             #endregion
 
             #region ViewModel
