@@ -46,6 +46,6 @@ public class ProjectDto
     public DateTime UpdatedAt { get; set; }
 
     public List<MyTaskDto> Task { get; set; } = new List<MyTaskDto>();
-    public GanttChartDto GanttChart { get; set; }
+    public GanttChartDto? GanttChart { get; set; }
     public List<MeetingDto> Meeting { get; set; } = new List<MeetingDto>();
 }

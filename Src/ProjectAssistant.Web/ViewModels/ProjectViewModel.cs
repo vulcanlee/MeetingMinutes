@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using ProjectAssistant.AdapterModels;
 using ProjectAssistant.Business.Repositories;
 using ProjectAssistant.Business.Services.Database;
+using ProjectAssistant.DataModel.Systems;
 using ProjectAssistant.EntityModel.Models;
 
 namespace ProjectAssistant.Web.ViewModels;
@@ -14,7 +15,7 @@ public class ProjectViewModel
     bool isNewRecordMode;
     private readonly ILogger<ProjectViewModel> logger;
     private readonly IMapper mapper;
-
+    public Action OnChanged { get; set; }
     #endregion
 
     #region Property 屬性
@@ -26,8 +27,18 @@ public class ProjectViewModel
     public string EditRecordTitle { get; set; }
 
     public int PageIndex { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
+    public int PageSize { get; set; } = 7;
     public int Total { get; set; } = 1;
+
+    public ConfirmModalModel ConfirmModal { get; set; } = new();
+    public MessageModalModel MessageModal { get; set; } = new();
+    public string AddOrEditTitle
+    {
+        get
+        {
+            return isNewRecordMode == true ? "新增" : "修改";
+        }
+    }
 
     #endregion
 
@@ -60,7 +71,10 @@ public class ProjectViewModel
         CurrentRecord = new ProjectAdapterModel();
         isNewRecordMode = true;
         IsShowEditRecord = true;
-        EditRecordTitle = "新增紀錄";
+        EditRecordTitle = $"{AddOrEditTitle} 紀錄";
+
+        CurrentRecord.StartDate = DateTime.Now;
+        CurrentRecord.EndDate = DateTime.Now.AddMonths(6);
     }
 
     public void OnEditRecord(ProjectAdapterModel record)
@@ -68,7 +82,26 @@ public class ProjectViewModel
         CurrentRecord = mapper.Map<ProjectAdapterModel>(record);
         isNewRecordMode = false;
         IsShowEditRecord = true;
-        EditRecordTitle = "修改紀錄";
+        EditRecordTitle = $"{AddOrEditTitle} 紀錄";
+    }
+
+    public async Task OnDeleteRecordAsync(ProjectAdapterModel record)
+    {
+        var confirmResult = await ConfirmModal.ShowAsync("警告", $"請再度確認，確定要 刪除 {record.Name} 這筆紀錄嗎?");
+        if (confirmResult == false)
+            return;
+
+        CurrentRecord = mapper.Map<ProjectAdapterModel>(record);
+        var verifyRecordResult = await CurrentService.DeleteAsync(record.Id);
+        if (verifyRecordResult == false)
+        {
+            var taskMessage= MessageModal.ShowAsync("錯誤通知", $"要進行刪除 {record.Name} 這筆紀錄，發生錯誤");
+            OnChanged?.Invoke();
+            await taskMessage;
+            return;
+        }
+        await GetAllAsync();
+        OnChanged?.Invoke();
     }
 
     public void OnEditContestChanged(EditContext context)
@@ -102,6 +135,10 @@ public class ProjectViewModel
         if (IsShowEditRecord == true)
         {
             var record = mapper.Map<Project>(CurrentRecord);
+            var confirmResult = await ConfirmModal.ShowAsync("通知", $"確定要 {AddOrEditTitle} 這筆紀錄嗎?");
+            if (confirmResult == false)
+                return;
+
             if (isNewRecordMode == true)
             {
                 var verifyRecordResult = await CurrentService.AddAsync(record);
@@ -111,6 +148,8 @@ public class ProjectViewModel
                 var verifyRecordResult = await CurrentService.UpdateAsync(record);
             }
             IsShowEditRecord = false;
+            await GetAllAsync();
+            OnChanged?.Invoke();
         }
     }
     #endregion

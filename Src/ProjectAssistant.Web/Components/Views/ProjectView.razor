@@ -16,6 +16,24 @@
             </TitleTemplate>
             <ColumnDefinitions Context="row">
                 <Column TData="string" DataIndex="@nameof(ProjectAdapterModel.Name)" Title="名稱" />
+                <Column TData="string" DataIndex="@nameof(ProjectAdapterModel.StartDateText)" Title="開始日" />
+                <Column TData="string" DataIndex="@nameof(ProjectAdapterModel.EndDateText)" Title="終止日" />
+                <Column TData="string" DataIndex="@nameof(ProjectAdapterModel.Owner)" Title="負責人" />
+                <ActionColumn Fixed="ColumnFixPlacement.Right" Title="操作">
+                    <Space>
+                        <SpaceItem>
+                            <Tooltip Title="修改">
+                                <Button Type="ButtonType.Primary" Shape="ButtonShape.Circle" Icon="@IconType.Outline.Edit" OnClick="()=>ViewModel.OnEditRecord(row)" />
+                            </Tooltip>
+                        </SpaceItem>
+                        <SpaceItem>
+                            <Tooltip Title="刪除">
+                                <Button Type="ButtonType.Primary" Shape="ButtonShape.Circle" Icon="@IconType.Outline.Clear" OnClick="async () => await ViewModel.OnDeleteRecordAsync(row)" />
+                            </Tooltip>
+                        </SpaceItem>
+                    </Space>
+                </ActionColumn>
+
             </ColumnDefinitions>
         </Table>
     </div>
@@ -38,37 +56,18 @@
 
     </div>
 </div>
-<Button OnClick="OnClicked">Default</Button>
-<Button Type="ButtonType.Primary" OnClick="OnMessageClicked">Default Message</Button>
-<ConfirmModal ViewModel="ConfirmModal" />
-<MessageModal ViewModel="MessageModal" />
+<ConfirmModal ViewModel="@ViewModel.ConfirmModal" />
+<MessageModal ViewModel="@ViewModel.MessageModal" />
 
 @code {
 
     ITable table;
 
-    ConfirmModalModel ConfirmModal = new();
-    MessageModalModel MessageModal = new();
-
-    async Task OnClicked()
-    {
-        ConfirmModal.Title = "測試標題";
-        ConfirmModal.Body = "測試內容";
-        var result = await ConfirmModal.ShowAsync("確認", "測試標題測試標題測試標題測試內容測試內容測試內容");
-
-    }
-
-    async Task OnMessageClicked()
-    {
-        MessageModal.Title = "測試測試測試標題";
-        MessageModal.Body = "測試內容";
-        var result = await MessageModal.ShowAsync("確認 測試", "測試標題測試標題測試標題測試內容測試內容測試內容");
-
-    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            ViewModel.OnChanged += StateHasChanged;
             await GetDataAsync(firstRender);
         }
     }

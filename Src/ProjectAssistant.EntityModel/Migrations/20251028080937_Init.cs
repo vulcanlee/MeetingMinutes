@@ -44,7 +44,7 @@ namespace ProjectAssistant.EntityModel.Migrations
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
                     Priority = table.Column<int>(type: "INTEGER", nullable: false),
                     CompletionPercentage = table.Column<int>(type: "INTEGER", nullable: false),
-                    Owner = table.Column<string>(type: "TEXT", nullable: false),
+                    Owner = table.Column<string>(type: "TEXT", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },

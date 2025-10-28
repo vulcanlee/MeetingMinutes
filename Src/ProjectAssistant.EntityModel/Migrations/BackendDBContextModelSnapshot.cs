@@ -244,7 +244,6 @@ namespace ProjectAssistant.EntityModel.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Owner")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Priority")
@@ -414,8 +413,7 @@ namespace ProjectAssistant.EntityModel.Migrations
 
             modelBuilder.Entity("ProjectAssistant.EntityModel.Models.Project", b =>
                 {
-                    b.Navigation("GanttChart")
-                        .IsRequired();
+                    b.Navigation("GanttChart");
 
                     b.Navigation("Meeting");
 

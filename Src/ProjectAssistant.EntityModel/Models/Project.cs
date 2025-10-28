@@ -18,11 +18,11 @@ public class Project
     public StatusEnum Status { get; set; }
     public PriorityEnum Priority { get; set; }
     public int CompletionPercentage { get; set; } // 0-100
-    public string Owner { get; set; }
+    public string? Owner { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
     public ICollection<MyTask> Task { get; set; }= new List<MyTask>();
-    public GanttChart GanttChart { get; set; }
+    public GanttChart? GanttChart { get; set; }
     public ICollection<Meeting> Meeting { get; set; }= new List<Meeting>();
 }

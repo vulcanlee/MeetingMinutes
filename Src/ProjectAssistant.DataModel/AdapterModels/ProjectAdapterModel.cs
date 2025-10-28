@@ -14,7 +14,21 @@ public class ProjectAdapterModel
     [StringLength(2000, ErrorMessage = "描述長度不可超過 2000 字元")]
     public string? Description { get; set; } = String.Empty;
     public DateTime StartDate { get; set; }
+    public string StartDateText
+    {
+        get
+        {
+            return StartDate.ToString("yyyy-MM-dd");
+        }
+    }
     public DateTime EndDate { get; set; }
+    public string EndDateText
+    {
+        get
+        {
+            return EndDate.ToString("yyyy-MM-dd");
+        }
+    }
     public StatusEnum Status { get; set; }
     public PriorityEnum Priority { get; set; }
     public int CompletionPercentage { get; set; } // 0-100
