@@ -22,20 +22,49 @@
 
     <div>
         <Modal Title=@ViewModel.EditRecordTitle Width="@("70%")"
+               Centered="true"
+               MaxBodyHeight="@("80vh")"
                Visible="@ViewModel.IsShowEditRecord"
+               Closable="false"
+               MaskClosable="false"
+               OkText="@("確定")"
                OnOk="@ViewModel.OnRecordEditConfirm"
+               CancelText="@("取消")" 
                OnCancel="@ViewModel.OnRecordEditCancel">
+           
             <ProjectForm ViewModel="ViewModel" />
+
         </Modal>
 
     </div>
 </div>
-
+<Button OnClick="OnClicked">Default</Button>
+<Button Type="ButtonType.Primary" OnClick="OnMessageClicked">Default Message</Button>
+<ConfirmModal ViewModel="ConfirmModal" />
+<MessageModal ViewModel="MessageModal" />
 
 @code {
 
     ITable table;
 
+    ConfirmModalModel ConfirmModal = new();
+    MessageModalModel MessageModal = new();
+
+    async Task OnClicked()
+    {
+        ConfirmModal.Title = "測試標題";
+        ConfirmModal.Body = "測試內容";
+        var result = await ConfirmModal.ShowAsync("確認", "測試標題測試標題測試標題測試內容測試內容測試內容");
+
+    }
+
+    async Task OnMessageClicked()
+    {
+        MessageModal.Title = "測試測試測試標題";
+        MessageModal.Body = "測試內容";
+        var result = await MessageModal.ShowAsync("確認 測試", "測試標題測試標題測試標題測試內容測試內容測試內容");
+
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

@@ -1,0 +1,33 @@
+﻿
+<div>
+    <Modal Title=@ViewModel.Title Width="@(ViewModel.Width)"
+           Centered="true"
+           MaxBodyHeight="@(ViewModel.MaxBodyHeight)"
+           Visible="@ViewModel.IsVisible"
+           Closable="false"
+           MaskClosable="false"
+           OkText="@("確定")"
+           OnOk="@OnOk"
+           CancelText="@("取消")"
+           OnCancel="@OnCancel">
+
+        <div>@ViewModel.Body</div>
+
+    </Modal>
+
+</div>
+
+@code {
+    [Parameter]
+    public ConfirmModalModel ViewModel { get; set; }
+    
+    async Task OnOk()
+    {
+       await ViewModel.HiddenAsync(true);
+    }
+
+    async Task OnCancel()
+    {
+       await ViewModel.HiddenAsync(false);
+    }
+}

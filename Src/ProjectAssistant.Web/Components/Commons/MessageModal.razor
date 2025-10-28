@@ -1,0 +1,30 @@
+﻿
+<div>
+    <Modal Title=@ViewModel.Title Width="@(ViewModel.Width)"
+           Centered="true"
+           MaxBodyHeight="@(ViewModel.MaxBodyHeight)"
+           Visible="@ViewModel.IsVisible"
+           Closable="false"
+           MaskClosable="false"
+           OkText="@("確定")"
+           Footer="null">
+
+        <div>@ViewModel.Body</div>
+        <div style="text-align: right; margin-top: 16px; border-top: 1px solid #f0f0f0;">
+            <Button Type="@ButtonType.Primary" OnClick="@OnOk">
+                確定
+            </Button>
+        </div>
+    </Modal>
+
+</div>
+
+@code {
+    [Parameter]
+    public MessageModalModel ViewModel { get; set; }
+    
+    async Task OnOk()
+    {
+       await ViewModel.HiddenAsync(true);
+    }
+}
