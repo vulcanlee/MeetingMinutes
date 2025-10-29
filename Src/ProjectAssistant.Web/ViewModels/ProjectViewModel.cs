@@ -1,10 +1,14 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using Microsoft.AspNetCore.Components.Forms;
 using ProjectAssistant.AdapterModels;
+using ProjectAssistant.Business.Helpers.Searchs;
 using ProjectAssistant.Business.Repositories;
 using ProjectAssistant.Business.Services.Database;
 using ProjectAssistant.DataModel.Systems;
+using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.EntityModel.Models;
+using System.Linq.Expressions;
 
 namespace ProjectAssistant.Web.ViewModels;
 
@@ -63,6 +67,20 @@ public class ProjectViewModel
         Datas = mapper.Map<List<ProjectAdapterModel>>(projects);
     }
 
+    public async Task GetPageAsync()
+    {
+        ProjectSearchRequestDto request = new ProjectSearchRequestDto()
+        {
+            PageIndex = this.PageIndex,
+            PageSize = this.PageSize,
+        };
+
+        PagedResult<Project> pagedResult = await CurrentService.GetPagedAsync(request);
+
+        Datas = mapper.Map<List<ProjectAdapterModel>>(pagedResult.Items);
+        Total = pagedResult.TotalCount;
+    }
+
     #endregion
 
     #region 修改紀錄對話窗的按鈕事件
@@ -95,12 +113,12 @@ public class ProjectViewModel
         var verifyRecordResult = await CurrentService.DeleteAsync(record.Id);
         if (verifyRecordResult == false)
         {
-            var taskMessage= MessageModal.ShowAsync("錯誤通知", $"要進行刪除 {record.Name} 這筆紀錄，發生錯誤");
+            var taskMessage = MessageModal.ShowAsync("錯誤通知", $"要進行刪除 {record.Name} 這筆紀錄，發生錯誤");
             OnChanged?.Invoke();
             await taskMessage;
             return;
         }
-        await GetAllAsync();
+        await GetPageAsync();
         OnChanged?.Invoke();
     }
 
@@ -148,7 +166,7 @@ public class ProjectViewModel
                 var verifyRecordResult = await CurrentService.UpdateAsync(record);
             }
             IsShowEditRecord = false;
-            await GetAllAsync();
+            await GetPageAsync();
             OnChanged?.Invoke();
         }
     }
@@ -157,6 +175,8 @@ public class ProjectViewModel
     #region 其他
     public async Task OnTableChange(AntDesign.TableModels.QueryModel<ProjectAdapterModel> args)
     {
+        PageIndex = args.PageIndex;
+        await GetPageAsync();
     }
 
     #endregion

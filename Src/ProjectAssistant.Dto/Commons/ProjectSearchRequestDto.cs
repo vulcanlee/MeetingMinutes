@@ -5,7 +5,7 @@ namespace ProjectAssistant.Dto.Commons;
 /// <summary>
 /// 專案搜尋請求參數
 /// </summary>
-public class ProjectSearchRequest
+public class ProjectSearchRequestDto
 {
     /// <summary>
     /// 頁碼 (從 1 開始)

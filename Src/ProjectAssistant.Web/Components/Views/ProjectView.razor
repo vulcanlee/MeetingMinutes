@@ -73,7 +73,7 @@
     }
     async Task GetDataAsync(bool firstRender = false)
     {
-        await ViewModel.GetAllAsync();
+        await ViewModel.GetPageAsync();
         if (firstRender == true)
         {
             StateHasChanged();

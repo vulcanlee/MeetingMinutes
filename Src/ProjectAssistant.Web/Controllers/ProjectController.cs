@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using ProjectAssistant.Business.Helpers;
+using ProjectAssistant.Business.Helpers.Searchs;
 using ProjectAssistant.Business.Repositories;
 using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.Dto.Models;
@@ -84,7 +85,7 @@ public class ProjectController : ControllerBase
     /// <param name="request">查詢請求參數</param>
     /// <returns></returns>
     [HttpPost("search")]
-    public async Task<ActionResult<ApiResult<PagedResult<ProjectDto>>>> Search([FromBody] ProjectSearchRequest request)
+    public async Task<ActionResult<ApiResult<PagedResult<ProjectDto>>>> Search([FromBody] ProjectSearchRequestDto request)
     {
         try
         {
@@ -100,43 +101,43 @@ public class ProjectController : ControllerBase
             if (!string.IsNullOrEmpty(request.Owner))
             {
                 var ownerPredicate = (Expression<Func<Project, bool>>)(p => p.Owner == request.Owner);
-                predicate = predicate == null ? ownerPredicate : CombinePredicates(predicate, ownerPredicate);
+                predicate = predicate == null ? ownerPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, ownerPredicate);
             }
 
             if (request.Status.HasValue)
             {
                 var statusPredicate = (Expression<Func<Project, bool>>)(p => p.Status == request.Status.Value);
-                predicate = predicate == null ? statusPredicate : CombinePredicates(predicate, statusPredicate);
+                predicate = predicate == null ? statusPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, statusPredicate);
             }
 
             if (request.Priority.HasValue)
             {
                 var priorityPredicate = (Expression<Func<Project, bool>>)(p => p.Priority == request.Priority.Value);
-                predicate = predicate == null ? priorityPredicate : CombinePredicates(predicate, priorityPredicate);
+                predicate = predicate == null ? priorityPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, priorityPredicate);
             }
 
             if (request.StartDateFrom.HasValue)
             {
                 var datePredicate = (Expression<Func<Project, bool>>)(p => p.StartDate >= request.StartDateFrom.Value);
-                predicate = predicate == null ? datePredicate : CombinePredicates(predicate, datePredicate);
+                predicate = predicate == null ? datePredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, datePredicate);
             }
 
             if (request.StartDateTo.HasValue)
             {
                 var datePredicate = (Expression<Func<Project, bool>>)(p => p.StartDate <= request.StartDateTo.Value);
-                predicate = predicate == null ? datePredicate : CombinePredicates(predicate, datePredicate);
+                predicate = predicate == null ? datePredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, datePredicate);
             }
 
             if (request.CompletionPercentageMin.HasValue)
             {
                 var completionPredicate = (Expression<Func<Project, bool>>)(p => p.CompletionPercentage >= request.CompletionPercentageMin.Value);
-                predicate = predicate == null ? completionPredicate : CombinePredicates(predicate, completionPredicate);
+                predicate = predicate == null ? completionPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, completionPredicate);
             }
 
             if (request.CompletionPercentageMax.HasValue)
             {
                 var completionPredicate = (Expression<Func<Project, bool>>)(p => p.CompletionPercentage <= request.CompletionPercentageMax.Value);
-                predicate = predicate == null ? completionPredicate : CombinePredicates(predicate, completionPredicate);
+                predicate = predicate == null ? completionPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, completionPredicate);
             }
 
             // 執行分頁查詢
@@ -148,7 +149,7 @@ public class ProjectController : ControllerBase
             );
 
             // 排序
-            items = ApplySorting(items, request.SortBy, request.SortDescending);
+            items = ProjectCombinedSearchHelper.ApplySorting(items, request.SortBy, request.SortDescending);
 
             // 轉換為 DTO
             var projectDtos = mapper.Map<List<ProjectDto>>(items);
@@ -305,64 +306,5 @@ public class ProjectController : ControllerBase
 
     #endregion
 
-    #region 輔助方法
-
-    /// <summary>
-    /// 組合 Expression 條件 (AND)
-    /// </summary>
-    private Expression<Func<Project, bool>> CombinePredicates(
-        Expression<Func<Project, bool>> first,
-        Expression<Func<Project, bool>> second)
-    {
-        var parameter = Expression.Parameter(typeof(Project), "p");
-
-        var leftVisitor = new ReplaceExpressionVisitor(first.Parameters[0], parameter);
-        var left = leftVisitor.Visit(first.Body);
-
-        var rightVisitor = new ReplaceExpressionVisitor(second.Parameters[0], parameter);
-        var right = rightVisitor.Visit(second.Body);
-
-        return Expression.Lambda<Func<Project, bool>>(
-            Expression.AndAlso(left, right), parameter);
-    }
-
-    /// <summary>
-    /// 套用排序
-    /// </summary>
-    private List<Project> ApplySorting(List<Project> projects, string? sortBy, bool descending)
-    {
-        if (string.IsNullOrEmpty(sortBy))
-        {
-            return projects;
-        }
-
-        return sortBy.ToLower() switch
-        {
-            "name" => descending
-                ? projects.OrderByDescending(p => p.Name).ToList()
-                : projects.OrderBy(p => p.Name).ToList(),
-            "startdate" => descending
-                ? projects.OrderByDescending(p => p.StartDate).ToList()
-                : projects.OrderBy(p => p.StartDate).ToList(),
-            "enddate" => descending
-                ? projects.OrderByDescending(p => p.EndDate).ToList()
-                : projects.OrderBy(p => p.EndDate).ToList(),
-            "status" => descending
-                ? projects.OrderByDescending(p => p.Status).ToList()
-                : projects.OrderBy(p => p.Status).ToList(),
-            "priority" => descending
-                ? projects.OrderByDescending(p => p.Priority).ToList()
-                : projects.OrderBy(p => p.Priority).ToList(),
-            "completionpercentage" => descending
-                ? projects.OrderByDescending(p => p.CompletionPercentage).ToList()
-                : projects.OrderBy(p => p.CompletionPercentage).ToList(),
-            "createdat" => descending
-                ? projects.OrderByDescending(p => p.CreatedAt).ToList()
-                : projects.OrderBy(p => p.CreatedAt).ToList(),
-            _ => projects
-        };
-    }
-
-    #endregion
 }
 

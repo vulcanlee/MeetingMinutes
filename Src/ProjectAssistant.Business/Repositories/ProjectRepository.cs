@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProjectAssistant.Business.Helpers.Searchs;
+using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.EntityModel;
 using ProjectAssistant.EntityModel.Models;
 using ProjectAssistant.Share.Enums;
+using System.Globalization;
 using System.Linq.Expressions;
 
 namespace ProjectAssistant.Business.Repositories;
@@ -109,6 +112,126 @@ public class ProjectRepository
             .ToListAsync();
 
         return (items, totalCount);
+    }
+
+    public async Task<PagedResult<Project>> GetPagedAsync(
+        ProjectSearchRequestDto request,
+        bool includeRelatedData = false)
+    {
+        var query = context.Project.AsNoTracking().AsQueryable();
+
+        #region 建立過濾條件
+        Expression<Func<Project, bool>>? predicate = null;
+
+        if (!string.IsNullOrEmpty(request.Keyword))
+        {
+            predicate = p => p.Name.Contains(request.Keyword) ||
+                            (p.Description != null && p.Description.Contains(request.Keyword));
+        }
+
+        if (!string.IsNullOrEmpty(request.Owner))
+        {
+            var ownerPredicate = (Expression<Func<Project, bool>>)(p => p.Owner == request.Owner);
+            predicate = predicate == null ? ownerPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, ownerPredicate);
+        }
+
+        if (request.Status.HasValue)
+        {
+            var statusPredicate = (Expression<Func<Project, bool>>)(p => p.Status == request.Status.Value);
+            predicate = predicate == null ? statusPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, statusPredicate);
+        }
+
+        if (request.Priority.HasValue)
+        {
+            var priorityPredicate = (Expression<Func<Project, bool>>)(p => p.Priority == request.Priority.Value);
+            predicate = predicate == null ? priorityPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, priorityPredicate);
+        }
+
+        if (request.StartDateFrom.HasValue)
+        {
+            var datePredicate = (Expression<Func<Project, bool>>)(p => p.StartDate >= request.StartDateFrom.Value);
+            predicate = predicate == null ? datePredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, datePredicate);
+        }
+
+        if (request.StartDateTo.HasValue)
+        {
+            var datePredicate = (Expression<Func<Project, bool>>)(p => p.StartDate <= request.StartDateTo.Value);
+            predicate = predicate == null ? datePredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, datePredicate);
+        }
+
+        if (request.CompletionPercentageMin.HasValue)
+        {
+            var completionPredicate = (Expression<Func<Project, bool>>)(p => p.CompletionPercentage >= request.CompletionPercentageMin.Value);
+            predicate = predicate == null ? completionPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, completionPredicate);
+        }
+
+        if (request.CompletionPercentageMax.HasValue)
+        {
+            var completionPredicate = (Expression<Func<Project, bool>>)(p => p.CompletionPercentage <= request.CompletionPercentageMax.Value);
+            predicate = predicate == null ? completionPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, completionPredicate);
+        }
+        #endregion 
+
+        if (predicate != null)
+        {
+            query = query.Where(predicate);
+        }
+
+        #region 根據 request.SortBy 及  request.Descending 進行排序
+        if (!string.IsNullOrEmpty(request.SortBy))
+        {
+            query = request.SortBy.ToLower() switch
+            {
+                "name" => request.SortDescending
+                    ? query.OrderByDescending(p => p.Name)
+                    : query.OrderBy(p => p.Name),
+                "startdate" => request.SortDescending
+                    ? query.OrderByDescending(p => p.StartDate)
+                    : query.OrderBy(p => p.StartDate),
+                "enddate" => request.SortDescending
+                    ? query.OrderByDescending(p => p.EndDate)
+                    : query.OrderBy(p => p.EndDate),
+                "status" => request.SortDescending
+                    ? query.OrderByDescending(p => p.Status)
+                    : query.OrderBy(p => p.Status),
+                "priority" => request.SortDescending
+                    ? query.OrderByDescending(p => p.Priority)
+                    : query.OrderBy(p => p.Priority),
+                "completionpercentage" => request.SortDescending
+                    ? query.OrderByDescending(p => p.CompletionPercentage)
+                    : query.OrderBy(p => p.CompletionPercentage),
+                "createdat" => request.SortDescending
+                    ? query.OrderByDescending(p => p.CreatedAt)
+                    : query.OrderBy(p => p.CreatedAt),
+                _ => query
+            };
+        }
+        #endregion
+
+        var totalCount = await query.CountAsync();
+
+        if (includeRelatedData)
+        {
+            query = query
+                .Include(p => p.Task)
+                .Include(p => p.GanttChart)
+                .Include(p => p.Meeting);
+        }
+
+        var items = await query
+            .Skip((request.PageIndex - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync();
+
+        PagedResult<Project> pagedResult = new()
+        {
+            Items = items,
+            PageIndex = request.PageIndex,
+            PageSize = request.PageSize,
+            TotalCount = totalCount
+        };
+
+        return pagedResult;
     }
 
     /// <summary>
