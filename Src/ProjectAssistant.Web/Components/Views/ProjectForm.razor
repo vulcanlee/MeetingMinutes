@@ -49,6 +49,21 @@
 
         <div class="row">
             <div class="col mb-3">
+                <label class="form-label">專案狀態</label>
+                <Select TItem="SelectItemModel"
+                    TItemValue="string"
+                    DataSource="@ViewModel.SelectItemsStatus"
+                        @bind-Value="@ViewModel.SelectValueStatus.Value"
+                        ValueName="@nameof(ViewModel.SelectValueStatus.Value)"
+                        LabelName="@nameof(ViewModel.SelectValueStatus.Key)"
+                        Placeholder="選擇一個專案狀態"
+                        OnSelectedItemChanged="@OnChange">
+                </Select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col mb-3">
                 <label class="form-label">負責人</label>
                 <Input Placeholder="Basic usage" @bind-Value="@ViewModel.CurrentRecord.Owner" />
                 <ValidationMessage For="@(() => ViewModel.CurrentRecord.Owner)" />
@@ -61,4 +76,8 @@
 @code {
     [Parameter]
     public ProjectViewModel ViewModel { get; set; } = null!;
+
+    private void OnChange(SelectItemModel value)
+    {
+    }
 }

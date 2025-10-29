@@ -1,14 +1,11 @@
 ﻿using AutoMapper;
-using Azure.Core;
 using Microsoft.AspNetCore.Components.Forms;
 using ProjectAssistant.AdapterModels;
-using ProjectAssistant.Business.Helpers.Searchs;
+using ProjectAssistant.Business.Helpers;
 using ProjectAssistant.Business.Repositories;
-using ProjectAssistant.Business.Services.Database;
 using ProjectAssistant.DataModel.Systems;
 using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.EntityModel.Models;
-using System.Linq.Expressions;
 
 namespace ProjectAssistant.Web.ViewModels;
 
@@ -36,6 +33,10 @@ public class ProjectViewModel
 
     public ConfirmModalModel ConfirmModal { get; set; } = new();
     public MessageModalModel MessageModal { get; set; } = new();
+
+    public List<SelectItemModel> SelectItemsStatus { get; set; } = new();
+    public SelectItemModel SelectValueStatus { get; set; } = new();
+
     public string AddOrEditTitle
     {
         get
@@ -54,6 +55,8 @@ public class ProjectViewModel
         this.logger = logger;
         this.mapper = mapper;
         this.CurrentService = projectRepository;
+
+        SelectItemsStatus = SelectItemStatusHelper.Build();
     }
 
     #endregion
@@ -177,6 +180,11 @@ public class ProjectViewModel
     {
         PageIndex = args.PageIndex;
         await GetPageAsync();
+    }
+
+    public void OnSelectStatusChangeSearch(string args)
+    {
+        throw new NotImplementedException();
     }
 
     #endregion
