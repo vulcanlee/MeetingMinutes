@@ -6,6 +6,7 @@ using ProjectAssistant.Business.Repositories;
 using ProjectAssistant.DataModel.Systems;
 using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.EntityModel.Models;
+using System.Threading.Tasks;
 
 namespace ProjectAssistant.Web.ViewModels;
 
@@ -38,6 +39,7 @@ public class ProjectViewModel
     public List<SelectItemModel> SelectItemsPriority { get; set; } = new();
     public SelectItemModel SelectValueStatus { get; set; } = new();
     public SelectItemModel SelectValuePriority { get; set; } = new();
+    public string SearchKeyword { get; set; }
 
     public string AddOrEditTitle
     {
@@ -79,6 +81,7 @@ public class ProjectViewModel
         {
             PageIndex = this.PageIndex,
             PageSize = this.PageSize,
+            Keyword = this.SearchKeyword,
         };
 
         PagedResult<Project> pagedResult = await CurrentService.GetPagedAsync(request);
@@ -221,6 +224,12 @@ public class ProjectViewModel
         {
             CurrentRecord.Status = status;
         }
+    }
+
+    public async Task OnKeywordHandlerAsync(string args = "")
+    {
+        if (string.IsNullOrWhiteSpace(args)) SearchKeyword = string.Empty;
+        await GetPageAsync();
     }
     #endregion
 

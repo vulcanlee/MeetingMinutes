@@ -15,7 +15,9 @@
         <div class="row">
             <div class="col mb-3">
                 <label class="form-label">描述</label>
-                <Input Placeholder="Basic usage" @bind-Value="@ViewModel.CurrentRecord.Description" />
+                <TextArea Rows="3"
+                          Placeholder="描述該專案內容"
+                          @bind-Value="@ViewModel.CurrentRecord.Description" />
                 <ValidationMessage For="@(() => ViewModel.CurrentRecord.Description)" />
             </div>
         </div>

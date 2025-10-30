@@ -10,8 +10,11 @@
                @bind-PageSize="@ViewModel.PageSize"
                @bind-Total=@ViewModel.Total>
             <TitleTemplate>
-                <Flex Justify="FlexJustify.End" Gap="@("10")">
+                <Flex Justify="FlexJustify.SpaceBetween" Gap="@("10")">
                     <Button Type="ButtonType.Primary" OnClick="() => ViewModel.OnAddNewRecord()">新增</Button>
+                    <Search WrapperStyle="width: 200px;" AllowClear
+                            OnClear="async ()=> await ViewModel.OnKeywordHandlerAsync()"
+                            Placeholder="輸入搜尋關鍵字" EnterButton="true" @bind-Value="@ViewModel.SearchKeyword" OnSearch="async (e) => await ViewModel.OnKeywordHandlerAsync(e)" />
                 </Flex>
             </TitleTemplate>
             <ColumnDefinitions Context="row">
@@ -23,7 +26,7 @@
                     <Space>
                         <SpaceItem>
                             <Tooltip Title="修改">
-                                <Button Type="ButtonType.Primary" Shape="ButtonShape.Circle" Icon="@IconType.Outline.Edit" OnClick="()=>ViewModel.OnEditRecord(row)" />
+                                <Button Type="ButtonType.Primary" Shape="ButtonShape.Circle" Icon="@IconType.Outline.Edit" OnClick="() => ViewModel.OnEditRecord(row)" />
                             </Tooltip>
                         </SpaceItem>
                         <SpaceItem>
@@ -47,9 +50,9 @@
                MaskClosable="false"
                OkText="@("確定")"
                OnOk="@ViewModel.OnRecordEditConfirm"
-               CancelText="@("取消")" 
+               CancelText="@("取消")"
                OnCancel="@ViewModel.OnRecordEditCancel">
-           
+
             <ProjectForm ViewModel="ViewModel" />
 
         </Modal>

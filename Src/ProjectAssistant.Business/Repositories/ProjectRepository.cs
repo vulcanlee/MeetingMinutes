@@ -219,6 +219,7 @@ public class ProjectRepository
         }
 
         var items = await query
+            .OrderByDescending(p => p.UpdatedAt)
             .Skip((request.PageIndex - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync();
@@ -301,7 +302,7 @@ public class ProjectRepository
         project.UpdatedAt = DateTime.Now;
         project.CreatedAt = existingProject.CreatedAt; // 保留原建立時間
 
-        context.Entry(project).CurrentValues.SetValues(project);
+        context.Entry(existingProject).CurrentValues.SetValues(project);
         await context.SaveChangesAsync();
 
         return true;
