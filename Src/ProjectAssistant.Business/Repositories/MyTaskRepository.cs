@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProjectAssistant.Business.Helpers.Searchs;
+using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.EntityModel;
 using ProjectAssistant.EntityModel.Models;
 using ProjectAssistant.Share.Enums;
@@ -50,24 +52,6 @@ public class MyTaskRepository
     }
 
     /// <summary>
-    /// 根據條件查詢工作
-    /// </summary>
-    public async Task<List<MyTask>> GetByConditionAsync(
-        Expression<Func<MyTask, bool>> predicate,
-        bool includeRelatedData = false)
-    {
-        var query = context.MyTask.AsNoTracking().Where(predicate);
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Project);
-        }
-
-        return await query.ToListAsync();
-    }
-
-    /// <summary>
     /// 分頁查詢工作
     /// </summary>
     public async Task<(List<MyTask> Items, int TotalCount)> GetPagedAsync(
@@ -92,12 +76,131 @@ public class MyTaskRepository
         }
 
         var items = await query
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderByDescending(p => p.UpdatedAt)
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         return (items, totalCount);
+    }
+
+    public async Task<PagedResult<MyTask>> GetPagedAsync(
+        MyTaskSearchRequestDto request,
+        bool includeRelatedData = false)
+    {
+        var query = context.MyTask.AsNoTracking().AsQueryable();
+
+        #region 建立過濾條件
+        Expression<Func<MyTask, bool>>? predicate = null;
+
+        if (!string.IsNullOrEmpty(request.Keyword))
+        {
+            predicate = p => p.Name.Contains(request.Keyword) ||
+                            (p.Description != null && p.Description.Contains(request.Keyword));
+        }
+
+        if (request.ProjectId.HasValue)
+        {
+            predicate = p => p.ProjectId == request.ProjectId.Value;
+        }
+
+        if (request.Status.HasValue)
+        {
+            var statusPredicate = (Expression<Func<MyTask, bool>>)(p => p.Status == request.Status.Value);
+            predicate = predicate == null ? statusPredicate : CombinedSearchHelper.MyTaskCombinePredicates(predicate, statusPredicate);
+        }
+
+        if (request.Priority.HasValue)
+        {
+            var priorityPredicate = (Expression<Func<MyTask, bool>>)(p => p.Priority == request.Priority.Value);
+            predicate = predicate == null ? priorityPredicate : CombinedSearchHelper.MyTaskCombinePredicates(predicate, priorityPredicate);
+        }
+
+        if (request.StartDateFrom.HasValue)
+        {
+            var datePredicate = (Expression<Func<MyTask, bool>>)(p => p.StartDate >= request.StartDateFrom.Value);
+            predicate = predicate == null ? datePredicate : CombinedSearchHelper.MyTaskCombinePredicates(predicate, datePredicate);
+        }
+
+        if (request.StartDateTo.HasValue)
+        {
+            var datePredicate = (Expression<Func<MyTask, bool>>)(p => p.StartDate <= request.StartDateTo.Value);
+            predicate = predicate == null ? datePredicate : CombinedSearchHelper.MyTaskCombinePredicates(predicate, datePredicate);
+        }
+
+        if (request.CompletionPercentageMin.HasValue)
+        {
+            var completionPredicate = (Expression<Func<MyTask, bool>>)(p => p.CompletionPercentage >= request.CompletionPercentageMin.Value);
+            predicate = predicate == null ? completionPredicate : CombinedSearchHelper.MyTaskCombinePredicates(predicate, completionPredicate);
+        }
+
+        if (request.CompletionPercentageMax.HasValue)
+        {
+            var completionPredicate = (Expression<Func<MyTask, bool>>)(p => p.CompletionPercentage <= request.CompletionPercentageMax.Value);
+            predicate = predicate == null ? completionPredicate : CombinedSearchHelper.MyTaskCombinePredicates(predicate, completionPredicate);
+        }
+        #endregion 
+
+        if (predicate != null)
+        {
+            query = query.Where(predicate);
+        }
+
+        #region 根據 request.SortBy 及  request.Descending 進行排序
+        if (!string.IsNullOrEmpty(request.SortBy))
+        {
+            query = request.SortBy.ToLower() switch
+            {
+                "name" => request.SortDescending
+                    ? query.OrderByDescending(p => p.Name)
+                    : query.OrderBy(p => p.Name),
+                "startdate" => request.SortDescending
+                    ? query.OrderByDescending(p => p.StartDate)
+                    : query.OrderBy(p => p.StartDate),
+                "enddate" => request.SortDescending
+                    ? query.OrderByDescending(p => p.EndDate)
+                    : query.OrderBy(p => p.EndDate),
+                "status" => request.SortDescending
+                    ? query.OrderByDescending(p => p.Status)
+                    : query.OrderBy(p => p.Status),
+                "priority" => request.SortDescending
+                    ? query.OrderByDescending(p => p.Priority)
+                    : query.OrderBy(p => p.Priority),
+                "completionpercentage" => request.SortDescending
+                    ? query.OrderByDescending(p => p.CompletionPercentage)
+                    : query.OrderBy(p => p.CompletionPercentage),
+                "createdat" => request.SortDescending
+                    ? query.OrderByDescending(p => p.CreatedAt)
+                    : query.OrderBy(p => p.CreatedAt),
+                _ => query
+            };
+        }
+        #endregion
+
+        var totalCount = await query.CountAsync();
+
+        if (includeRelatedData)
+        {
+            query = query
+                .Include(p => p.Project)
+                ;
+        }
+
+        var items = await query
+            .OrderByDescending(p => p.UpdatedAt)
+            .Skip((request.PageIndex - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync();
+
+        PagedResult<MyTask> pagedResult = new()
+        {
+            Items = items,
+            PageIndex = request.PageIndex,
+            PageSize = request.PageSize,
+            TotalCount = totalCount
+        };
+
+        return pagedResult;
     }
 
     /// <summary>

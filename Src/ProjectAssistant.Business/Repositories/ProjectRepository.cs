@@ -132,43 +132,43 @@ public class ProjectRepository
         if (!string.IsNullOrEmpty(request.Owner))
         {
             var ownerPredicate = (Expression<Func<Project, bool>>)(p => p.Owner == request.Owner);
-            predicate = predicate == null ? ownerPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, ownerPredicate);
+            predicate = predicate == null ? ownerPredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, ownerPredicate);
         }
 
         if (request.Status.HasValue)
         {
             var statusPredicate = (Expression<Func<Project, bool>>)(p => p.Status == request.Status.Value);
-            predicate = predicate == null ? statusPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, statusPredicate);
+            predicate = predicate == null ? statusPredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, statusPredicate);
         }
 
         if (request.Priority.HasValue)
         {
             var priorityPredicate = (Expression<Func<Project, bool>>)(p => p.Priority == request.Priority.Value);
-            predicate = predicate == null ? priorityPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, priorityPredicate);
+            predicate = predicate == null ? priorityPredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, priorityPredicate);
         }
 
         if (request.StartDateFrom.HasValue)
         {
             var datePredicate = (Expression<Func<Project, bool>>)(p => p.StartDate >= request.StartDateFrom.Value);
-            predicate = predicate == null ? datePredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, datePredicate);
+            predicate = predicate == null ? datePredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, datePredicate);
         }
 
         if (request.StartDateTo.HasValue)
         {
             var datePredicate = (Expression<Func<Project, bool>>)(p => p.StartDate <= request.StartDateTo.Value);
-            predicate = predicate == null ? datePredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, datePredicate);
+            predicate = predicate == null ? datePredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, datePredicate);
         }
 
         if (request.CompletionPercentageMin.HasValue)
         {
             var completionPredicate = (Expression<Func<Project, bool>>)(p => p.CompletionPercentage >= request.CompletionPercentageMin.Value);
-            predicate = predicate == null ? completionPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, completionPredicate);
+            predicate = predicate == null ? completionPredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, completionPredicate);
         }
 
         if (request.CompletionPercentageMax.HasValue)
         {
             var completionPredicate = (Expression<Func<Project, bool>>)(p => p.CompletionPercentage <= request.CompletionPercentageMax.Value);
-            predicate = predicate == null ? completionPredicate : ProjectCombinedSearchHelper.CombinePredicates(predicate, completionPredicate);
+            predicate = predicate == null ? completionPredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, completionPredicate);
         }
         #endregion 
 

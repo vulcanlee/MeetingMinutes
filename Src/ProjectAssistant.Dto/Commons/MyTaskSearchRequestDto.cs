@@ -5,12 +5,12 @@ namespace ProjectAssistant.Dto.Commons;
 /// <summary>
 /// 專案搜尋請求參數
 /// </summary>
-public class ProjectSearchRequestDto: SearchRequestBaseDto
+public class MyTaskSearchRequestDto: SearchRequestBaseDto
 {
     /// <summary>
-    /// 擁有者
+    /// 專案代碼
     /// </summary>
-    public string? Owner { get; set; }
+    public int? ProjectId { get; set; }
 
     /// <summary>
     /// 專案狀態

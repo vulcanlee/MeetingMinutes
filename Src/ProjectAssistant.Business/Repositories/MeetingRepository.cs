@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProjectAssistant.Business.Helpers.Searchs;
+using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.EntityModel;
 using ProjectAssistant.EntityModel.Models;
 using ProjectAssistant.Share.Enums;
@@ -98,6 +100,75 @@ public class MeetingRepository
             .ToListAsync();
 
         return (items, totalCount);
+    }
+
+    public async Task<PagedResult<Meeting>> GetPagedAsync(
+        MeetingSearchRequestDto request,
+        bool includeRelatedData = false)
+    {
+        var query = context.Meeting.AsNoTracking().AsQueryable();
+
+        #region 建立過濾條件
+        Expression<Func<Meeting, bool>>? predicate = null;
+
+        if (!string.IsNullOrEmpty(request.Keyword))
+        {
+            predicate = p => p.Name.Contains(request.Keyword) ||
+                            (p.Description != null && p.Description.Contains(request.Keyword));
+        }
+
+        if (request.ProjectId.HasValue)
+        {
+            predicate = p => p.ProjectId == request.ProjectId.Value;
+        }
+
+        #endregion 
+
+        if (predicate != null)
+        {
+            query = query.Where(predicate);
+        }
+
+        #region 根據 request.SortBy 及  request.Descending 進行排序
+        if (!string.IsNullOrEmpty(request.SortBy))
+        {
+            query = request.SortBy.ToLower() switch
+            {
+                "name" => request.SortDescending
+                    ? query.OrderByDescending(p => p.Name)
+                    : query.OrderBy(p => p.Name),
+                "createdat" => request.SortDescending
+                    ? query.OrderByDescending(p => p.CreatedAt)
+                    : query.OrderBy(p => p.CreatedAt),
+                _ => query
+            };
+        }
+        #endregion
+
+        var totalCount = await query.CountAsync();
+
+        if (includeRelatedData)
+        {
+            query = query
+                .Include(p => p.Project)
+                ;
+        }
+
+        var items = await query
+            .OrderByDescending(p => p.UpdatedAt)
+            .Skip((request.PageIndex - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync();
+
+        PagedResult<Meeting> pagedResult = new()
+        {
+            Items = items,
+            PageIndex = request.PageIndex,
+            PageSize = request.PageSize,
+            TotalCount = totalCount
+        };
+
+        return pagedResult;
     }
 
     /// <summary>
