@@ -301,7 +301,7 @@ public class ProjectRepository
         project.UpdatedAt = DateTime.Now;
         project.CreatedAt = existingProject.CreatedAt; // 保留原建立時間
 
-        context.Entry(existingProject).CurrentValues.SetValues(project);
+        context.Entry(project).CurrentValues.SetValues(project);
         await context.SaveChangesAsync();
 
         return true;

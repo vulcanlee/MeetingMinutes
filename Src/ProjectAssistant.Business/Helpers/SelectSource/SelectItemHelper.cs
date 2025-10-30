@@ -6,9 +6,9 @@ using ProjectAssistant.Share.Enums;
 
 namespace ProjectAssistant.Business.Helpers;
 
-public class SelectItemStatusHelper
+public class SelectItemHelper
 {
-    public static List<SelectItemModel> Build()
+    public static List<SelectItemModel> BuildStatus()
     {
         return new List<SelectItemModel>
         {
@@ -19,4 +19,16 @@ public class SelectItemStatusHelper
             new SelectItemModel { Key = StatusEnum.已取消.ToString(),  Value = StatusEnum.已取消.ToString() },
         };
     }
+
+    public static List<SelectItemModel> BuildPriority()
+    {
+        return new List<SelectItemModel>
+        {
+            new SelectItemModel { Key = PriorityEnum.低.ToString(),  Value = PriorityEnum.低.ToString() },
+            new SelectItemModel { Key = PriorityEnum.中.ToString(),  Value = PriorityEnum.中.ToString() },
+            new SelectItemModel { Key = PriorityEnum.高.ToString(),  Value = PriorityEnum.高.ToString() },
+            new SelectItemModel { Key = PriorityEnum.緊急.ToString(),  Value = PriorityEnum.緊急.ToString() },
+        };
+    }
+
 }

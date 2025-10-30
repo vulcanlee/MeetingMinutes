@@ -35,7 +35,9 @@ public class ProjectViewModel
     public MessageModalModel MessageModal { get; set; } = new();
 
     public List<SelectItemModel> SelectItemsStatus { get; set; } = new();
+    public List<SelectItemModel> SelectItemsPriority { get; set; } = new();
     public SelectItemModel SelectValueStatus { get; set; } = new();
+    public SelectItemModel SelectValuePriority { get; set; } = new();
 
     public string AddOrEditTitle
     {
@@ -56,7 +58,8 @@ public class ProjectViewModel
         this.mapper = mapper;
         this.CurrentService = projectRepository;
 
-        SelectItemsStatus = SelectItemStatusHelper.Build();
+        SelectItemsStatus = SelectItemHelper.BuildStatus();
+        SelectItemsPriority = SelectItemHelper.BuildPriority();
     }
 
     #endregion
@@ -96,6 +99,16 @@ public class ProjectViewModel
 
         CurrentRecord.StartDate = DateTime.Now;
         CurrentRecord.EndDate = DateTime.Now.AddMonths(6);
+        var foundItem = SelectItemsStatus.FirstOrDefault();
+        if (foundItem != null)
+        {
+            SelectValueStatus = foundItem;
+        }
+        foundItem = SelectItemsPriority.FirstOrDefault();
+        if (foundItem != null)
+        {
+            SelectValuePriority = foundItem;
+        }
     }
 
     public void OnEditRecord(ProjectAdapterModel record)
@@ -104,6 +117,17 @@ public class ProjectViewModel
         isNewRecordMode = false;
         IsShowEditRecord = true;
         EditRecordTitle = $"{AddOrEditTitle} 紀錄";
+
+        var foundItem = SelectItemsStatus.FirstOrDefault(x => x.Value == CurrentRecord.Status.ToString());
+        if (foundItem != null)
+        {
+            SelectValueStatus = foundItem;
+        }
+        foundItem = SelectItemsPriority.FirstOrDefault(x => x.Value == CurrentRecord.Priority.ToString());
+        if (foundItem != null)
+        {
+            SelectValuePriority = foundItem;
+        }
     }
 
     public async Task OnDeleteRecordAsync(ProjectAdapterModel record)
@@ -176,16 +200,29 @@ public class ProjectViewModel
     #endregion
 
     #region 其他
+    #region 事件
     public async Task OnTableChange(AntDesign.TableModels.QueryModel<ProjectAdapterModel> args)
     {
         PageIndex = args.PageIndex;
         await GetPageAsync();
     }
 
-    public void OnSelectStatusChangeSearch(string args)
+    public void OnPriorityChange(SelectItemModel value)
     {
-        throw new NotImplementedException();
+        if (Enum.TryParse<ProjectAssistant.Share.Enums.PriorityEnum>(value.Value, true, out var priority))
+        {
+            CurrentRecord.Priority = priority;
+        }
     }
+
+    public void OnStatusChange(SelectItemModel value)
+    {
+        if (Enum.TryParse<ProjectAssistant.Share.Enums.StatusEnum>(value.Value, true, out var status))
+        {
+            CurrentRecord.Status = status;
+        }
+    }
+    #endregion
 
     #endregion
     #endregion
