@@ -30,9 +30,9 @@ public class MyTaskController : ControllerBase
     #region 查詢 API
 
     /// <summary>
-    /// 根據 ID 取得專案
+    /// 根據 ID 取得工作
     /// </summary>
-    /// <param name="id">專案 ID</param>
+    /// <param name="id">工作 ID</param>
     /// <param name="includeRelatedData">是否包含關聯資料</param>
     /// <returns></returns>
     [HttpGet("{id}")]
@@ -44,16 +44,16 @@ public class MyTaskController : ControllerBase
 
             if (MyTask == null)
             {
-                return NotFound(ApiResult<MyTaskDto>.NotFoundResult($"找不到 ID 為 {id} 的專案"));
+                return NotFound(ApiResult<MyTaskDto>.NotFoundResult($"找不到 ID 為 {id} 的工作"));
             }
 
             var MyTaskDto = mapper.Map<MyTaskDto>(MyTask);
-            return Ok(ApiResult<MyTaskDto>.SuccessResult(MyTaskDto, "取得專案成功"));
+            return Ok(ApiResult<MyTaskDto>.SuccessResult(MyTaskDto, "取得工作成功"));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "取得專案 ID {Id} 時發生錯誤", id);
-            return StatusCode(500, ApiResult<MyTaskDto>.ServerErrorResult("取得專案時發生錯誤", ex.Message));
+            logger.LogError(ex, "取得工作 ID {Id} 時發生錯誤", id);
+            return StatusCode(500, ApiResult<MyTaskDto>.ServerErrorResult("取得工作時發生錯誤", ex.Message));
         }
     }
 
@@ -94,9 +94,9 @@ public class MyTaskController : ControllerBase
     #region 新增 API
 
     /// <summary>
-    /// 新增專案
+    /// 新增工作
     /// </summary>
-    /// <param name="MyTaskDto">專案資料</param>
+    /// <param name="MyTaskDto">工作資料</param>
     /// <returns></returns>
     [HttpPost]
     public async Task<ActionResult<ApiResult<MyTaskDto>>> Create([FromBody] MyTaskDto MyTaskDto)
@@ -111,10 +111,10 @@ public class MyTaskController : ControllerBase
                 return BadRequest(ApiResult<MyTaskDto>.ValidationError(errors));
             }
 
-            // 檢查專案名稱是否重複
+            // 檢查工作名稱是否重複
             if (await MyTaskRepository.ExistsByNameAsync(MyTaskDto.Name))
             {
-                return Conflict(ApiResult<MyTaskDto>.ConflictResult($"專案名稱 '{MyTaskDto.Name}' 已存在"));
+                return Conflict(ApiResult<MyTaskDto>.ConflictResult($"工作名稱 '{MyTaskDto.Name}' 已存在"));
             }
 
             // DTO 轉 Entity
@@ -123,12 +123,12 @@ public class MyTaskController : ControllerBase
 
             // Entity 轉 DTO
             var createdMyTaskDto = mapper.Map<MyTaskDto>(createdMyTask);
-            return Ok(ApiResult<MyTaskDto>.SuccessResult(createdMyTaskDto, "新增專案成功"));
+            return Ok(ApiResult<MyTaskDto>.SuccessResult(createdMyTaskDto, "新增工作成功"));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "新增專案時發生錯誤");
-            return StatusCode(500, ApiResult<MyTaskDto>.ServerErrorResult("新增專案時發生錯誤", ex.Message));
+            logger.LogError(ex, "新增工作時發生錯誤");
+            return StatusCode(500, ApiResult<MyTaskDto>.ServerErrorResult("新增工作時發生錯誤", ex.Message));
         }
     }
 
@@ -137,10 +137,10 @@ public class MyTaskController : ControllerBase
     #region 更新 API
 
     /// <summary>
-    /// 更新專案
+    /// 更新工作
     /// </summary>
-    /// <param name="id">專案 ID</param>
-    /// <param name="MyTaskDto">專案資料</param>
+    /// <param name="id">工作 ID</param>
+    /// <param name="MyTaskDto">工作資料</param>
     /// <returns></returns>
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResult>> Update(int id, [FromBody] MyTaskDto MyTaskDto)
@@ -157,13 +157,13 @@ public class MyTaskController : ControllerBase
 
             if (id != MyTaskDto.Id)
             {
-                return BadRequest(ApiResult.ValidationError("路由 ID 與專案 ID 不符"));
+                return BadRequest(ApiResult.ValidationError("路由 ID 與工作 ID 不符"));
             }
 
-            // 檢查專案名稱是否與其他專案重複
+            // 檢查工作名稱是否與其他工作重複
             if (await MyTaskRepository.ExistsByNameAsync(MyTaskDto.Name, id))
             {
-                return Conflict(ApiResult.ConflictResult($"專案名稱 '{MyTaskDto.Name}' 已被其他專案使用"));
+                return Conflict(ApiResult.ConflictResult($"工作名稱 '{MyTaskDto.Name}' 已被其他工作使用"));
             }
 
             // DTO 轉 Entity
@@ -172,15 +172,15 @@ public class MyTaskController : ControllerBase
 
             if (!success)
             {
-                return NotFound(ApiResult.NotFoundResult($"找不到 ID 為 {id} 的專案"));
+                return NotFound(ApiResult.NotFoundResult($"找不到 ID 為 {id} 的工作"));
             }
 
-            return Ok(ApiResult.SuccessResult("更新專案成功"));
+            return Ok(ApiResult.SuccessResult("更新工作成功"));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "更新專案 ID {Id} 時發生錯誤", id);
-            return StatusCode(500, ApiResult.ServerErrorResult("更新專案時發生錯誤", ex.Message));
+            logger.LogError(ex, "更新工作 ID {Id} 時發生錯誤", id);
+            return StatusCode(500, ApiResult.ServerErrorResult("更新工作時發生錯誤", ex.Message));
         }
     }
 
@@ -189,9 +189,9 @@ public class MyTaskController : ControllerBase
     #region 刪除 API
 
     /// <summary>
-    /// 刪除專案
+    /// 刪除工作
     /// </summary>
-    /// <param name="id">專案 ID</param>
+    /// <param name="id">工作 ID</param>
     /// <returns></returns>
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResult>> Delete(int id)
@@ -202,22 +202,22 @@ public class MyTaskController : ControllerBase
 
             if (!success)
             {
-                return NotFound(ApiResult.NotFoundResult($"找不到 ID 為 {id} 的專案"));
+                return NotFound(ApiResult.NotFoundResult($"找不到 ID 為 {id} 的工作"));
             }
 
-            return Ok(ApiResult.SuccessResult("刪除專案成功"));
+            return Ok(ApiResult.SuccessResult("刪除工作成功"));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "刪除專案 ID {Id} 時發生錯誤", id);
+            logger.LogError(ex, "刪除工作 ID {Id} 時發生錯誤", id);
 
             // 檢查是否為外鍵約束錯誤
             if (ex.InnerException?.Message.Contains("DELETE statement conflicted") == true)
             {
-                return BadRequest(ApiResult.FailureResult("無法刪除此專案,因為有相關的子資料(任務、會議等)存在"));
+                return BadRequest(ApiResult.FailureResult("無法刪除此工作,因為有相關的子資料(任務、會議等)存在"));
             }
 
-            return StatusCode(500, ApiResult.ServerErrorResult("刪除專案時發生錯誤", ex.Message));
+            return StatusCode(500, ApiResult.ServerErrorResult("刪除工作時發生錯誤", ex.Message));
         }
     }
 

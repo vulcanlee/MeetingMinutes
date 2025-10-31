@@ -18,7 +18,7 @@ public class GanttChartRepository
     #region 查詢方法
 
     /// <summary>
-    /// 根據 ID 取得工作
+    /// 根據 ID 取得甘特圖
     /// </summary>
     public async Task<GanttChart?> GetByIdAsync(int id, bool includeRelatedData = false)
     {
@@ -34,7 +34,7 @@ public class GanttChartRepository
     }
 
     /// <summary>
-    /// 分頁查詢工作
+    /// 分頁查詢甘特圖
     /// </summary>
     public async Task<PagedResult<GanttChart>> GetPagedAsync(
         GanttChartSearchRequestDto request,
@@ -88,7 +88,7 @@ public class GanttChartRepository
     #region 新增方法
 
     /// <summary>
-    /// 新增工作
+    /// 新增甘特圖
     /// </summary>
     public async Task<GanttChart> AddAsync(GanttChart GanttChart)
     {
@@ -107,7 +107,7 @@ public class GanttChartRepository
     #region 更新方法
 
     /// <summary>
-    /// 更新工作
+    /// 更新甘特圖
     /// </summary>
     public async Task<bool> UpdateAsync(GanttChart GanttChart)
     {
@@ -132,7 +132,7 @@ public class GanttChartRepository
     #region 刪除方法
 
     /// <summary>
-    /// 刪除工作
+    /// 刪除甘特圖
     /// </summary>
     public async Task<bool> DeleteAsync(int id)
     {

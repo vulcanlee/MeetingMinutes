@@ -6,7 +6,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
 		<UserSecretsId>8da354f7-7cbe-4e69-b12e-08faccea0ac8</UserSecretsId>
-		<RuntimeFrameworkVersion>10.0.0-rc.2.25502.107</RuntimeFrameworkVersion>
 	</PropertyGroup>
 
 	<!--<PropertyGroup>

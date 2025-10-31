@@ -19,7 +19,7 @@ public class MeetingRepository
     #region 查詢方法
 
     /// <summary>
-    /// 根據 ID 取得工作
+    /// 根據 ID 取得會議
     /// </summary>
     public async Task<Meeting?> GetByIdAsync(int id, bool includeRelatedData = false)
     {
@@ -104,7 +104,7 @@ public class MeetingRepository
     }
 
     /// <summary>
-    /// 檢查工作名稱是否存在
+    /// 檢查會議名稱是否存在
     /// </summary>
     public async Task<bool> ExistsByNameAsync(string name, int? excludeId = null)
     {
@@ -123,7 +123,7 @@ public class MeetingRepository
     #region 新增方法
 
     /// <summary>
-    /// 新增工作
+    /// 新增會議
     /// </summary>
     public async Task<Meeting> AddAsync(Meeting Meeting)
     {
@@ -142,7 +142,7 @@ public class MeetingRepository
     #region 更新方法
 
     /// <summary>
-    /// 更新工作
+    /// 更新會議
     /// </summary>
     public async Task<bool> UpdateAsync(Meeting Meeting)
     {
@@ -167,7 +167,7 @@ public class MeetingRepository
     #region 刪除方法
 
     /// <summary>
-    /// 刪除工作
+    /// 刪除會議
     /// </summary>
     public async Task<bool> DeleteAsync(int id)
     {

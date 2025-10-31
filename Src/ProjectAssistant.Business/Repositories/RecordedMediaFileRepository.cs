@@ -19,7 +19,7 @@ public class RecordedMediaFileRepository
     #region 查詢方法
 
     /// <summary>
-    /// 根據 ID 取得工作
+    /// 根據 ID 取得會議影音檔
     /// </summary>
     public async Task<RecordedMediaFile?> GetByIdAsync(int id, bool includeRelatedData = false)
     {
@@ -35,7 +35,7 @@ public class RecordedMediaFileRepository
     }
 
     /// <summary>
-    /// 分頁查詢工作
+    /// 分頁查詢會議影音檔
     /// </summary>
     public async Task<PagedResult<RecordedMediaFile>> GetPagedAsync(
         RecordedMediaFileSearchRequestDto request,
@@ -85,7 +85,7 @@ public class RecordedMediaFileRepository
     }
 
     /// <summary>
-    /// 檢查工作名稱是否存在
+    /// 檢查會議影音檔名稱是否存在
     /// </summary>
     public async Task<bool> ExistsByNameAsync(string name, int? excludeId = null)
     {
@@ -104,7 +104,7 @@ public class RecordedMediaFileRepository
     #region 新增方法
 
     /// <summary>
-    /// 新增工作
+    /// 新增會議影音檔
     /// </summary>
     public async Task<RecordedMediaFile> AddAsync(RecordedMediaFile RecordedMediaFile)
     {
@@ -122,7 +122,7 @@ public class RecordedMediaFileRepository
     #region 更新方法
 
     /// <summary>
-    /// 更新工作
+    /// 更新會議影音檔
     /// </summary>
     public async Task<bool> UpdateAsync(RecordedMediaFile RecordedMediaFile)
     {
@@ -146,7 +146,7 @@ public class RecordedMediaFileRepository
     #region 刪除方法
 
     /// <summary>
-    /// 刪除工作
+    /// 刪除會議影音檔
     /// </summary>
     public async Task<bool> DeleteAsync(int id)
     {

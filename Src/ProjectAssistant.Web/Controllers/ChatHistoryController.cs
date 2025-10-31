@@ -29,9 +29,9 @@ public class ChatHistoryController : ControllerBase
     #region 查詢 API
 
     /// <summary>
-    /// 根據 ID 取得專案
+    /// 根據 ID 取得會議聊天
     /// </summary>
-    /// <param name="id">專案 ID</param>
+    /// <param name="id">會議聊天 ID</param>
     /// <param name="includeRelatedData">是否包含關聯資料</param>
     /// <returns></returns>
     [HttpGet("{id}")]
@@ -43,21 +43,21 @@ public class ChatHistoryController : ControllerBase
 
             if (ChatHistory == null)
             {
-                return NotFound(ApiResult<ChatHistoryDto>.NotFoundResult($"找不到 ID 為 {id} 的專案"));
+                return NotFound(ApiResult<ChatHistoryDto>.NotFoundResult($"找不到 ID 為 {id} 的會議聊天"));
             }
 
             var ChatHistoryDto = mapper.Map<ChatHistoryDto>(ChatHistory);
-            return Ok(ApiResult<ChatHistoryDto>.SuccessResult(ChatHistoryDto, "取得專案成功"));
+            return Ok(ApiResult<ChatHistoryDto>.SuccessResult(ChatHistoryDto, "取得會議聊天成功"));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "取得專案 ID {Id} 時發生錯誤", id);
-            return StatusCode(500, ApiResult<ChatHistoryDto>.ServerErrorResult("取得專案時發生錯誤", ex.Message));
+            logger.LogError(ex, "取得會議聊天 ID {Id} 時發生錯誤", id);
+            return StatusCode(500, ApiResult<ChatHistoryDto>.ServerErrorResult("取得會議聊天時發生錯誤", ex.Message));
         }
     }
 
     /// <summary>
-    /// 分頁查詢專案(支援排序、過濾)
+    /// 分頁查詢會議聊天(支援排序、過濾)
     /// </summary>
     /// <param name="request">查詢請求參數</param>
     /// <returns></returns>
@@ -93,9 +93,9 @@ public class ChatHistoryController : ControllerBase
     #region 新增 API
 
     /// <summary>
-    /// 新增專案
+    /// 新增會議聊天
     /// </summary>
-    /// <param name="ChatHistoryDto">專案資料</param>
+    /// <param name="ChatHistoryDto">會議聊天資料</param>
     /// <returns></returns>
     [HttpPost]
     public async Task<ActionResult<ApiResult<ChatHistoryDto>>> Create([FromBody] ChatHistoryDto ChatHistoryDto)
@@ -110,10 +110,10 @@ public class ChatHistoryController : ControllerBase
                 return BadRequest(ApiResult<ChatHistoryDto>.ValidationError(errors));
             }
 
-            // 檢查專案名稱是否重複
+            // 檢查會議聊天名稱是否重複
             if (await ChatHistoryRepository.ExistsByNameAsync(ChatHistoryDto.Name))
             {
-                return Conflict(ApiResult<ChatHistoryDto>.ConflictResult($"專案名稱 '{ChatHistoryDto.Name}' 已存在"));
+                return Conflict(ApiResult<ChatHistoryDto>.ConflictResult($"會議聊天名稱 '{ChatHistoryDto.Name}' 已存在"));
             }
 
             // DTO 轉 Entity
@@ -122,12 +122,12 @@ public class ChatHistoryController : ControllerBase
 
             // Entity 轉 DTO
             var createdChatHistoryDto = mapper.Map<ChatHistoryDto>(createdChatHistory);
-            return Ok(ApiResult<ChatHistoryDto>.SuccessResult(createdChatHistoryDto, "新增專案成功"));
+            return Ok(ApiResult<ChatHistoryDto>.SuccessResult(createdChatHistoryDto, "新增會議聊天成功"));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "新增專案時發生錯誤");
-            return StatusCode(500, ApiResult<ChatHistoryDto>.ServerErrorResult("新增專案時發生錯誤", ex.Message));
+            logger.LogError(ex, "新增會議聊天時發生錯誤");
+            return StatusCode(500, ApiResult<ChatHistoryDto>.ServerErrorResult("新增會議聊天時發生錯誤", ex.Message));
         }
     }
 
@@ -136,10 +136,10 @@ public class ChatHistoryController : ControllerBase
     #region 更新 API
 
     /// <summary>
-    /// 更新專案
+    /// 更新會議聊天
     /// </summary>
-    /// <param name="id">專案 ID</param>
-    /// <param name="ChatHistoryDto">專案資料</param>
+    /// <param name="id">會議聊天 ID</param>
+    /// <param name="ChatHistoryDto">會議聊天資料</param>
     /// <returns></returns>
     [HttpPut("{id}")]
     public async Task<ActionResult<ApiResult>> Update(int id, [FromBody] ChatHistoryDto ChatHistoryDto)
@@ -156,13 +156,13 @@ public class ChatHistoryController : ControllerBase
 
             if (id != ChatHistoryDto.Id)
             {
-                return BadRequest(ApiResult.ValidationError("路由 ID 與專案 ID 不符"));
+                return BadRequest(ApiResult.ValidationError("路由 ID 與會議聊天 ID 不符"));
             }
 
-            // 檢查專案名稱是否與其他專案重複
+            // 檢查會議聊天名稱是否與其他會議聊天重複
             if (await ChatHistoryRepository.ExistsByNameAsync(ChatHistoryDto.Name, id))
             {
-                return Conflict(ApiResult.ConflictResult($"專案名稱 '{ChatHistoryDto.Name}' 已被其他專案使用"));
+                return Conflict(ApiResult.ConflictResult($"會議聊天名稱 '{ChatHistoryDto.Name}' 已被其他會議聊天使用"));
             }
 
             // DTO 轉 Entity
@@ -171,15 +171,15 @@ public class ChatHistoryController : ControllerBase
 
             if (!success)
             {
-                return NotFound(ApiResult.NotFoundResult($"找不到 ID 為 {id} 的專案"));
+                return NotFound(ApiResult.NotFoundResult($"找不到 ID 為 {id} 的會議聊天"));
             }
 
-            return Ok(ApiResult.SuccessResult("更新專案成功"));
+            return Ok(ApiResult.SuccessResult("更新會議聊天成功"));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "更新專案 ID {Id} 時發生錯誤", id);
-            return StatusCode(500, ApiResult.ServerErrorResult("更新專案時發生錯誤", ex.Message));
+            logger.LogError(ex, "更新會議聊天 ID {Id} 時發生錯誤", id);
+            return StatusCode(500, ApiResult.ServerErrorResult("更新會議聊天時發生錯誤", ex.Message));
         }
     }
 
@@ -188,9 +188,9 @@ public class ChatHistoryController : ControllerBase
     #region 刪除 API
 
     /// <summary>
-    /// 刪除專案
+    /// 刪除會議聊天
     /// </summary>
-    /// <param name="id">專案 ID</param>
+    /// <param name="id">會議聊天 ID</param>
     /// <returns></returns>
     [HttpDelete("{id}")]
     public async Task<ActionResult<ApiResult>> Delete(int id)
@@ -201,22 +201,22 @@ public class ChatHistoryController : ControllerBase
 
             if (!success)
             {
-                return NotFound(ApiResult.NotFoundResult($"找不到 ID 為 {id} 的專案"));
+                return NotFound(ApiResult.NotFoundResult($"找不到 ID 為 {id} 的會議聊天"));
             }
 
-            return Ok(ApiResult.SuccessResult("刪除專案成功"));
+            return Ok(ApiResult.SuccessResult("刪除會議聊天成功"));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "刪除專案 ID {Id} 時發生錯誤", id);
+            logger.LogError(ex, "刪除會議聊天 ID {Id} 時發生錯誤", id);
 
             // 檢查是否為外鍵約束錯誤
             if (ex.InnerException?.Message.Contains("DELETE statement conflicted") == true)
             {
-                return BadRequest(ApiResult.FailureResult("無法刪除此專案,因為有相關的子資料(任務、會議等)存在"));
+                return BadRequest(ApiResult.FailureResult("無法刪除此會議聊天,因為有相關的子資料(任務、會議等)存在"));
             }
 
-            return StatusCode(500, ApiResult.ServerErrorResult("刪除專案時發生錯誤", ex.Message));
+            return StatusCode(500, ApiResult.ServerErrorResult("刪除會議聊天時發生錯誤", ex.Message));
         }
     }
 
