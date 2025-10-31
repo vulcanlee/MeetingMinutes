@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.EntityModel;
 using ProjectAssistant.EntityModel.Models;
-using ProjectAssistant.Share.Enums;
 using System.Linq.Expressions;
 
 namespace ProjectAssistant.Business.Repositories;
@@ -16,22 +16,6 @@ public class GanttChartRepository
     }
 
     #region 查詢方法
-
-    /// <summary>
-    /// 取得所有工作(包含相關資料)
-    /// </summary>
-    public async Task<List<GanttChart>> GetAllAsync(bool includeRelatedData = false)
-    {
-        var query = context.GanttChart.AsNoTracking().AsQueryable();
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Project);
-        }
-
-        return await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
-    }
 
     /// <summary>
     /// 根據 ID 取得工作
@@ -50,33 +34,23 @@ public class GanttChartRepository
     }
 
     /// <summary>
-    /// 根據條件查詢工作
-    /// </summary>
-    public async Task<List<GanttChart>> GetByConditionAsync(
-        Expression<Func<GanttChart, bool>> predicate,
-        bool includeRelatedData = false)
-    {
-        var query = context.GanttChart.AsNoTracking().Where(predicate);
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Project);
-        }
-
-        return await query.ToListAsync();
-    }
-
-    /// <summary>
     /// 分頁查詢工作
     /// </summary>
-    public async Task<(List<GanttChart> Items, int TotalCount)> GetPagedAsync(
-        int pageIndex,
-        int pageSize,
-        Expression<Func<GanttChart, bool>>? predicate = null,
+    public async Task<PagedResult<GanttChart>> GetPagedAsync(
+        GanttChartSearchRequestDto request,
         bool includeRelatedData = false)
     {
         var query = context.GanttChart.AsNoTracking().AsQueryable();
+
+        #region 建立過濾條件
+        Expression<Func<GanttChart, bool>>? predicate = null;
+
+        if (request.ProjectId.HasValue)
+        {
+            predicate = p => p.ProjectId == request.ProjectId.Value;
+        }
+
+        #endregion 
 
         if (predicate != null)
         {
@@ -88,16 +62,25 @@ public class GanttChartRepository
         if (includeRelatedData)
         {
             query = query
-                .Include(p => p.Project);
+                .Include(p => p.Project)
+                ;
         }
 
         var items = await query
-            .OrderByDescending(p => p.CreatedAt)
-            .Skip((pageIndex - 1) * pageSize)
-            .Take(pageSize)
+            .OrderByDescending(p => p.UpdatedAt)
+            .Skip((request.PageIndex - 1) * request.PageSize)
+            .Take(request.PageSize)
             .ToListAsync();
 
-        return (items, totalCount);
+        PagedResult<GanttChart> pagedResult = new()
+        {
+            Items = items,
+            PageIndex = request.PageIndex,
+            PageSize = request.PageSize,
+            TotalCount = totalCount
+        };
+
+        return pagedResult;
     }
 
     #endregion
@@ -111,6 +94,7 @@ public class GanttChartRepository
     {
         GanttChart.CreatedAt = DateTime.Now;
         GanttChart.UpdatedAt = DateTime.Now;
+        GanttChart.Project = null; // 避免更新關聯資料
 
         await context.GanttChart.AddAsync(GanttChart);
         await context.SaveChangesAsync();
@@ -135,6 +119,7 @@ public class GanttChartRepository
 
         GanttChart.UpdatedAt = DateTime.Now;
         GanttChart.CreatedAt = existingGanttChart.CreatedAt; // 保留原建立時間
+        GanttChart.Project = null; // 避免更新關聯資料
 
         context.Entry(existingGanttChart).CurrentValues.SetValues(GanttChart);
         await context.SaveChangesAsync();

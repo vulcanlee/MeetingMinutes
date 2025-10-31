@@ -5,7 +5,6 @@ using ProjectAssistant.Business.Repositories;
 using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.Dto.Models;
 using ProjectAssistant.EntityModel.Models;
-using ProjectAssistant.Share.Enums;
 using System.Linq.Expressions;
 
 namespace ProjectAssistant.Web.Controllers;
@@ -28,27 +27,6 @@ public class ChatHistoryController : ControllerBase
     }
 
     #region 查詢 API
-
-    /// <summary>
-    /// 取得所有專案
-    /// </summary>
-    /// <param name="includeRelatedData">是否包含關聯資料</param>
-    /// <returns></returns>
-    [HttpGet]
-    public async Task<ActionResult<ApiResult<List<ChatHistoryDto>>>> GetAll([FromQuery] bool includeRelatedData = false)
-    {
-        try
-        {
-            var ChatHistorys = await ChatHistoryRepository.GetAllAsync(includeRelatedData);
-            var ChatHistoryDtos = mapper.Map<List<ChatHistoryDto>>(ChatHistorys);
-            return Ok(ApiResult<List<ChatHistoryDto>>.SuccessResult(ChatHistoryDtos, "取得所有專案成功"));
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "取得所有專案時發生錯誤");
-            return StatusCode(500, ApiResult<List<ChatHistoryDto>>.ServerErrorResult("取得所有專案時發生錯誤", ex.Message));
-        }
-    }
 
     /// <summary>
     /// 根據 ID 取得專案
@@ -84,47 +62,29 @@ public class ChatHistoryController : ControllerBase
     /// <param name="request">查詢請求參數</param>
     /// <returns></returns>
     [HttpPost("search")]
-    public async Task<ActionResult<ApiResult<PagedResult<ChatHistoryDto>>>> Search([FromBody] CommonSearchRequest request)
+    public async Task<ActionResult<ApiResult<PagedResult<ChatHistoryDto>>>> Search([FromBody] ChatHistorySearchRequestDto request)
     {
         try
         {
-            // 建立過濾條件
-            Expression<Func<ChatHistory, bool>>? predicate = null;
-
-            if (!string.IsNullOrEmpty(request.Keyword))
-            {
-                predicate = p => p.Name.Contains(request.Keyword);
-            }
-
             // 執行分頁查詢
-            var (items, totalCount) = await ChatHistoryRepository.GetPagedAsync(
-                request.PageIndex,
-                request.PageSize,
-                predicate,
-                request.IncludeRelatedData
-            );
-
-            // 排序
-            items = ApplySorting(items, request.SortBy, request.SortDescending);
-
-            // 轉換為 DTO
-            var ChatHistoryDtos = mapper.Map<List<ChatHistoryDto>>(items);
+            PagedResult<ChatHistory> pagedResult = await ChatHistoryRepository.GetPagedAsync(request);
+            var ChatHistoryDtos = mapper.Map<List<ChatHistoryDto>>(pagedResult.Items);
 
             var result = new PagedResult<ChatHistoryDto>
             {
                 Items = ChatHistoryDtos,
-                TotalCount = totalCount,
+                TotalCount = pagedResult.TotalCount,
                 PageIndex = request.PageIndex,
                 PageSize = request.PageSize,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+                TotalPages = (int)Math.Ceiling(pagedResult.TotalCount / (double)request.PageSize)
             };
 
-            return Ok(ApiResult<PagedResult<ChatHistoryDto>>.SuccessResult(result, "搜尋專案成功"));
+            return Ok(ApiResult<PagedResult<ChatHistoryDto>>.SuccessResult(result, "搜尋會議聊天成功"));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "搜尋專案時發生錯誤");
-            return StatusCode(500, ApiResult<PagedResult<ChatHistoryDto>>.ServerErrorResult("搜尋專案時發生錯誤", ex.Message));
+            logger.LogError(ex, "搜尋會議聊天時發生錯誤");
+            return StatusCode(500, ApiResult<PagedResult<ChatHistoryDto>>.ServerErrorResult("搜尋會議聊天時發生錯誤", ex.Message));
         }
     }
 

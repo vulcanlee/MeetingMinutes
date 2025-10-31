@@ -1,13 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using ProjectAssistant.Business.Helpers;
-using ProjectAssistant.Business.Helpers.Searchs;
 using ProjectAssistant.Business.Repositories;
 using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.Dto.Models;
 using ProjectAssistant.EntityModel.Models;
-using ProjectAssistant.Share.Enums;
-using System.Linq.Expressions;
 
 namespace ProjectAssistant.Web.Controllers;
 
@@ -29,27 +25,6 @@ public class ProjectController : ControllerBase
     }
 
     #region 查詢 API
-
-    /// <summary>
-    /// 取得所有專案
-    /// </summary>
-    /// <param name="includeRelatedData">是否包含關聯資料</param>
-    /// <returns></returns>
-    [HttpGet]
-    public async Task<ActionResult<ApiResult<List<ProjectDto>>>> GetAll([FromQuery] bool includeRelatedData = false)
-    {
-        try
-        {
-            var projects = await projectRepository.GetAllAsync(includeRelatedData);
-            var projectDtos = mapper.Map<List<ProjectDto>>(projects);
-            return Ok(ApiResult<List<ProjectDto>>.SuccessResult(projectDtos, "取得所有專案成功"));
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "取得所有專案時發生錯誤");
-            return StatusCode(500, ApiResult<List<ProjectDto>>.ServerErrorResult("取得所有專案時發生錯誤", ex.Message));
-        }
-    }
 
     /// <summary>
     /// 根據 ID 取得專案
@@ -89,78 +64,17 @@ public class ProjectController : ControllerBase
     {
         try
         {
-            // 建立過濾條件
-            Expression<Func<Project, bool>>? predicate = null;
-
-            if (!string.IsNullOrEmpty(request.Keyword))
-            {
-                predicate = p => p.Name.Contains(request.Keyword) ||
-                                (p.Description != null && p.Description.Contains(request.Keyword));
-            }
-
-            if (!string.IsNullOrEmpty(request.Owner))
-            {
-                var ownerPredicate = (Expression<Func<Project, bool>>)(p => p.Owner == request.Owner);
-                predicate = predicate == null ? ownerPredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, ownerPredicate);
-            }
-
-            if (request.Status.HasValue)
-            {
-                var statusPredicate = (Expression<Func<Project, bool>>)(p => p.Status == request.Status.Value);
-                predicate = predicate == null ? statusPredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, statusPredicate);
-            }
-
-            if (request.Priority.HasValue)
-            {
-                var priorityPredicate = (Expression<Func<Project, bool>>)(p => p.Priority == request.Priority.Value);
-                predicate = predicate == null ? priorityPredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, priorityPredicate);
-            }
-
-            if (request.StartDateFrom.HasValue)
-            {
-                var datePredicate = (Expression<Func<Project, bool>>)(p => p.StartDate >= request.StartDateFrom.Value);
-                predicate = predicate == null ? datePredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, datePredicate);
-            }
-
-            if (request.StartDateTo.HasValue)
-            {
-                var datePredicate = (Expression<Func<Project, bool>>)(p => p.StartDate <= request.StartDateTo.Value);
-                predicate = predicate == null ? datePredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, datePredicate);
-            }
-
-            if (request.CompletionPercentageMin.HasValue)
-            {
-                var completionPredicate = (Expression<Func<Project, bool>>)(p => p.CompletionPercentage >= request.CompletionPercentageMin.Value);
-                predicate = predicate == null ? completionPredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, completionPredicate);
-            }
-
-            if (request.CompletionPercentageMax.HasValue)
-            {
-                var completionPredicate = (Expression<Func<Project, bool>>)(p => p.CompletionPercentage <= request.CompletionPercentageMax.Value);
-                predicate = predicate == null ? completionPredicate : CombinedSearchHelper.ProjectCombinePredicates(predicate, completionPredicate);
-            }
-
             // 執行分頁查詢
-            var (items, totalCount) = await projectRepository.GetPagedAsync(
-                request.PageIndex,
-                request.PageSize,
-                predicate,
-                request.IncludeRelatedData
-            );
-
-            // 排序
-            items = CombinedSearchHelper.ProjectApplySorting(items, request.SortBy, request.SortDescending);
-
-            // 轉換為 DTO
-            var projectDtos = mapper.Map<List<ProjectDto>>(items);
+            PagedResult<Project> pagedResult = await projectRepository.GetPagedAsync(request);
+            var projectDtos = mapper.Map<List<ProjectDto>>(pagedResult.Items);
 
             var result = new PagedResult<ProjectDto>
             {
                 Items = projectDtos,
-                TotalCount = totalCount,
+                TotalCount = pagedResult.TotalCount,
                 PageIndex = request.PageIndex,
                 PageSize = request.PageSize,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+                TotalPages = (int)Math.Ceiling(pagedResult.TotalCount / (double)request.PageSize)
             };
 
             return Ok(ApiResult<PagedResult<ProjectDto>>.SuccessResult(result, "搜尋專案成功"));

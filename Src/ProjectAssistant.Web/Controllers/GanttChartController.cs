@@ -5,7 +5,6 @@ using ProjectAssistant.Business.Repositories;
 using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.Dto.Models;
 using ProjectAssistant.EntityModel.Models;
-using ProjectAssistant.Share.Enums;
 using System.Linq.Expressions;
 
 namespace ProjectAssistant.Web.Controllers;
@@ -28,27 +27,6 @@ public class GanttChartController : ControllerBase
     }
 
     #region 查詢 API
-
-    /// <summary>
-    /// 取得所有專案
-    /// </summary>
-    /// <param name="includeRelatedData">是否包含關聯資料</param>
-    /// <returns></returns>
-    [HttpGet]
-    public async Task<ActionResult<ApiResult<List<GanttChartDto>>>> GetAll([FromQuery] bool includeRelatedData = false)
-    {
-        try
-        {
-            var GanttCharts = await GanttChartRepository.GetAllAsync(includeRelatedData);
-            var GanttChartDtos = mapper.Map<List<GanttChartDto>>(GanttCharts);
-            return Ok(ApiResult<List<GanttChartDto>>.SuccessResult(GanttChartDtos, "取得所有專案成功"));
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "取得所有專案時發生錯誤");
-            return StatusCode(500, ApiResult<List<GanttChartDto>>.ServerErrorResult("取得所有專案時發生錯誤", ex.Message));
-        }
-    }
 
     /// <summary>
     /// 根據 ID 取得專案
@@ -79,52 +57,34 @@ public class GanttChartController : ControllerBase
     }
 
     /// <summary>
-    /// 分頁查詢專案(支援排序、過濾)
+    /// 分頁查詢甘特圖(支援排序、過濾)
     /// </summary>
     /// <param name="request">查詢請求參數</param>
     /// <returns></returns>
     [HttpPost("search")]
-    public async Task<ActionResult<ApiResult<PagedResult<GanttChartDto>>>> Search([FromBody] CommonSearchRequest request)
+    public async Task<ActionResult<ApiResult<PagedResult<GanttChartDto>>>> Search([FromBody] GanttChartSearchRequestDto request)
     {
         try
         {
-            // 建立過濾條件
-            Expression<Func<GanttChart, bool>>? predicate = null;
-
-            if (!string.IsNullOrEmpty(request.Keyword))
-            {
-                predicate = p => p.Content.Contains(request.Keyword);
-            }
-
             // 執行分頁查詢
-            var (items, totalCount) = await GanttChartRepository.GetPagedAsync(
-                request.PageIndex,
-                request.PageSize,
-                predicate,
-                request.IncludeRelatedData
-            );
-
-            // 排序
-            items = ApplySorting(items, request.SortBy, request.SortDescending);
-
-            // 轉換為 DTO
-            var GanttChartDtos = mapper.Map<List<GanttChartDto>>(items);
+            PagedResult<GanttChart> pagedResult = await GanttChartRepository.GetPagedAsync(request);
+            var GanttChartDtos = mapper.Map<List<GanttChartDto>>(pagedResult.Items);
 
             var result = new PagedResult<GanttChartDto>
             {
                 Items = GanttChartDtos,
-                TotalCount = totalCount,
+                TotalCount = pagedResult.TotalCount,
                 PageIndex = request.PageIndex,
                 PageSize = request.PageSize,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize)
+                TotalPages = (int)Math.Ceiling(pagedResult.TotalCount / (double)request.PageSize)
             };
 
-            return Ok(ApiResult<PagedResult<GanttChartDto>>.SuccessResult(result, "搜尋專案成功"));
+            return Ok(ApiResult<PagedResult<GanttChartDto>>.SuccessResult(result, "搜尋甘特圖成功"));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "搜尋專案時發生錯誤");
-            return StatusCode(500, ApiResult<PagedResult<GanttChartDto>>.ServerErrorResult("搜尋專案時發生錯誤", ex.Message));
+            logger.LogError(ex, "搜尋甘特圖時發生錯誤");
+            return StatusCode(500, ApiResult<PagedResult<GanttChartDto>>.ServerErrorResult("搜尋甘特圖時發生錯誤", ex.Message));
         }
     }
 

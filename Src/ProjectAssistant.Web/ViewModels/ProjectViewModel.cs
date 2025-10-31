@@ -69,12 +69,6 @@ public class ProjectViewModel
     #region Method 方法
 
     #region CRUD
-    public async Task GetAllAsync()
-    {
-        var projects = await CurrentService.GetAllAsync();
-        Datas = mapper.Map<List<ProjectAdapterModel>>(projects);
-    }
-
     public async Task GetPageAsync()
     {
         ProjectSearchRequestDto request = new ProjectSearchRequestDto()

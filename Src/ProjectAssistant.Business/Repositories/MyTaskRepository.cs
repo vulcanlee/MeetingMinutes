@@ -20,22 +20,6 @@ public class MyTaskRepository
     #region 查詢方法
 
     /// <summary>
-    /// 取得所有工作(包含相關資料)
-    /// </summary>
-    public async Task<List<MyTask>> GetAllAsync(bool includeRelatedData = false)
-    {
-        var query = context.MyTask.AsNoTracking().AsQueryable();
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Project);
-        }
-
-        return await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
-    }
-
-    /// <summary>
     /// 根據 ID 取得工作
     /// </summary>
     public async Task<MyTask?> GetByIdAsync(int id, bool includeRelatedData = false)
@@ -49,39 +33,6 @@ public class MyTaskRepository
         }
 
         return await query.FirstOrDefaultAsync(p => p.Id == id);
-    }
-
-    /// <summary>
-    /// 分頁查詢工作
-    /// </summary>
-    public async Task<(List<MyTask> Items, int TotalCount)> GetPagedAsync(
-        int pageIndex,
-        int pageSize,
-        Expression<Func<MyTask, bool>>? predicate = null,
-        bool includeRelatedData = false)
-    {
-        var query = context.MyTask.AsNoTracking().AsQueryable();
-
-        if (predicate != null)
-        {
-            query = query.Where(predicate);
-        }
-
-        var totalCount = await query.CountAsync();
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Project);
-        }
-
-        var items = await query
-            .OrderByDescending(p => p.UpdatedAt)
-            .Skip((pageIndex - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        return (items, totalCount);
     }
 
     public async Task<PagedResult<MyTask>> GetPagedAsync(
@@ -229,6 +180,7 @@ public class MyTaskRepository
     {
         MyTask.CreatedAt = DateTime.Now;
         MyTask.UpdatedAt = DateTime.Now;
+        MyTask.Project = null; // 避免 EF 嘗試新增相關的 Project 實體
 
         await context.MyTask.AddAsync(MyTask);
         await context.SaveChangesAsync();
@@ -253,6 +205,7 @@ public class MyTaskRepository
 
         MyTask.UpdatedAt = DateTime.Now;
         MyTask.CreatedAt = existingMyTask.CreatedAt; // 保留原建立時間
+        MyTask.Project = null; // 避免 EF 嘗試新增相關的 Project 實體
 
         context.Entry(existingMyTask).CurrentValues.SetValues(MyTask);
         await context.SaveChangesAsync();

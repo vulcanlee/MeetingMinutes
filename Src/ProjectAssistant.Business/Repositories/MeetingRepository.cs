@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ProjectAssistant.Business.Helpers.Searchs;
 using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.EntityModel;
 using ProjectAssistant.EntityModel.Models;
@@ -20,22 +19,6 @@ public class MeetingRepository
     #region 查詢方法
 
     /// <summary>
-    /// 取得所有工作(包含相關資料)
-    /// </summary>
-    public async Task<List<Meeting>> GetAllAsync(bool includeRelatedData = false)
-    {
-        var query = context.Meeting.AsNoTracking().AsQueryable();
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Project);
-        }
-
-        return await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
-    }
-
-    /// <summary>
     /// 根據 ID 取得工作
     /// </summary>
     public async Task<Meeting?> GetByIdAsync(int id, bool includeRelatedData = false)
@@ -51,57 +34,6 @@ public class MeetingRepository
         return await query.FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    /// <summary>
-    /// 根據條件查詢工作
-    /// </summary>
-    public async Task<List<Meeting>> GetByConditionAsync(
-        Expression<Func<Meeting, bool>> predicate,
-        bool includeRelatedData = false)
-    {
-        var query = context.Meeting.AsNoTracking().Where(predicate);
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Project);
-        }
-
-        return await query.ToListAsync();
-    }
-
-    /// <summary>
-    /// 分頁查詢工作
-    /// </summary>
-    public async Task<(List<Meeting> Items, int TotalCount)> GetPagedAsync(
-        int pageIndex,
-        int pageSize,
-        Expression<Func<Meeting, bool>>? predicate = null,
-        bool includeRelatedData = false)
-    {
-        var query = context.Meeting.AsNoTracking().AsQueryable();
-
-        if (predicate != null)
-        {
-            query = query.Where(predicate);
-        }
-
-        var totalCount = await query.CountAsync();
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Project);
-        }
-
-        var items = await query
-            .OrderByDescending(p => p.CreatedAt)
-            .Skip((pageIndex - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        return (items, totalCount);
-    }
-
     public async Task<PagedResult<Meeting>> GetPagedAsync(
         MeetingSearchRequestDto request,
         bool includeRelatedData = false)
@@ -111,15 +43,15 @@ public class MeetingRepository
         #region 建立過濾條件
         Expression<Func<Meeting, bool>>? predicate = null;
 
+        if (request.ProjectId.HasValue)
+        {
+            predicate = p => p.ProjectId == request.ProjectId.Value;
+        }
+
         if (!string.IsNullOrEmpty(request.Keyword))
         {
             predicate = p => p.Name.Contains(request.Keyword) ||
                             (p.Description != null && p.Description.Contains(request.Keyword));
-        }
-
-        if (request.ProjectId.HasValue)
-        {
-            predicate = p => p.ProjectId == request.ProjectId.Value;
         }
 
         #endregion 
@@ -197,6 +129,7 @@ public class MeetingRepository
     {
         Meeting.CreatedAt = DateTime.Now;
         Meeting.UpdatedAt = DateTime.Now;
+        Meeting.Project = null; // 避免新增時一併新增 Project 資料
 
         await context.Meeting.AddAsync(Meeting);
         await context.SaveChangesAsync();
@@ -221,6 +154,7 @@ public class MeetingRepository
 
         Meeting.UpdatedAt = DateTime.Now;
         Meeting.CreatedAt = existingMeeting.CreatedAt; // 保留原建立時間
+        Meeting.Project = null; // 避免更新關聯資料
 
         context.Entry(existingMeeting).CurrentValues.SetValues(Meeting);
         await context.SaveChangesAsync();

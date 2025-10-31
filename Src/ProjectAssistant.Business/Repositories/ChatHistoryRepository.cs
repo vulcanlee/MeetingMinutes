@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.EntityModel;
 using ProjectAssistant.EntityModel.Models;
 using ProjectAssistant.Share.Enums;
@@ -18,22 +19,6 @@ public class ChatHistoryRepository
     #region 查詢方法
 
     /// <summary>
-    /// 取得所有工作(包含相關資料)
-    /// </summary>
-    public async Task<List<ChatHistory>> GetAllAsync(bool includeRelatedData = false)
-    {
-        var query = context.ChatHistory.AsNoTracking().AsQueryable();
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Meeting);
-        }
-
-        return await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
-    }
-
-    /// <summary>
     /// 根據 ID 取得工作
     /// </summary>
     public async Task<ChatHistory?> GetByIdAsync(int id, bool includeRelatedData = false)
@@ -49,55 +34,72 @@ public class ChatHistoryRepository
         return await query.FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    /// <summary>
-    /// 根據條件查詢工作
-    /// </summary>
-    public async Task<List<ChatHistory>> GetByConditionAsync(
-        Expression<Func<ChatHistory, bool>> predicate,
-        bool includeRelatedData = false)
-    {
-        var query = context.ChatHistory.AsNoTracking().Where(predicate);
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Meeting);
-        }
-
-        return await query.ToListAsync();
-    }
-
-    /// <summary>
-    /// 分頁查詢工作
-    /// </summary>
-    public async Task<(List<ChatHistory> Items, int TotalCount)> GetPagedAsync(
-        int pageIndex,
-        int pageSize,
-        Expression<Func<ChatHistory, bool>>? predicate = null,
-        bool includeRelatedData = false)
+    public async Task<PagedResult<ChatHistory>> GetPagedAsync(
+    ChatHistorySearchRequestDto request,
+    bool includeRelatedData = false)
     {
         var query = context.ChatHistory.AsNoTracking().AsQueryable();
+
+        #region 建立過濾條件
+        Expression<Func<ChatHistory, bool>>? predicate = null;
+
+        if (request.MeetingId.HasValue)
+        {
+            predicate = p => p.MeetingId == request.MeetingId.Value;
+        }
+
+        if (!string.IsNullOrEmpty(request.Keyword))
+        {
+            predicate = p => p.Name.Contains(request.Keyword);
+        }
+
+        #endregion 
 
         if (predicate != null)
         {
             query = query.Where(predicate);
         }
 
+        #region 根據 request.SortBy 及  request.Descending 進行排序
+        if (!string.IsNullOrEmpty(request.SortBy))
+        {
+            query = request.SortBy.ToLower() switch
+            {
+                "name" => request.SortDescending
+                    ? query.OrderByDescending(p => p.Name)
+                    : query.OrderBy(p => p.Name),
+                "createdat" => request.SortDescending
+                    ? query.OrderByDescending(p => p.CreatedAt)
+                    : query.OrderBy(p => p.CreatedAt),
+                _ => query
+            };
+        }
+        #endregion
+
         var totalCount = await query.CountAsync();
 
         if (includeRelatedData)
         {
             query = query
-                .Include(p => p.Meeting);
+                .Include(p => p.Meeting)
+                ;
         }
 
         var items = await query
-            .OrderByDescending(p => p.CreatedAt)
-            .Skip((pageIndex - 1) * pageSize)
-            .Take(pageSize)
+            .OrderByDescending(p => p.UpdatedAt)
+            .Skip((request.PageIndex - 1) * request.PageSize)
+            .Take(request.PageSize)
             .ToListAsync();
 
-        return (items, totalCount);
+        PagedResult<ChatHistory> pagedResult = new()
+        {
+            Items = items,
+            PageIndex = request.PageIndex,
+            PageSize = request.PageSize,
+            TotalCount = totalCount
+        };
+
+        return pagedResult;
     }
 
     /// <summary>

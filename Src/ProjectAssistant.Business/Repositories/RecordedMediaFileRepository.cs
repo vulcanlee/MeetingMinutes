@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProjectAssistant.Dto.Commons;
 using ProjectAssistant.EntityModel;
 using ProjectAssistant.EntityModel.Models;
 using ProjectAssistant.Share.Enums;
@@ -18,22 +19,6 @@ public class RecordedMediaFileRepository
     #region 查詢方法
 
     /// <summary>
-    /// 取得所有工作(包含相關資料)
-    /// </summary>
-    public async Task<List<RecordedMediaFile>> GetAllAsync(bool includeRelatedData = false)
-    {
-        var query = context.RecordedMediaFile.AsNoTracking().AsQueryable();
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Meeting);
-        }
-
-        return await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
-    }
-
-    /// <summary>
     /// 根據 ID 取得工作
     /// </summary>
     public async Task<RecordedMediaFile?> GetByIdAsync(int id, bool includeRelatedData = false)
@@ -50,33 +35,23 @@ public class RecordedMediaFileRepository
     }
 
     /// <summary>
-    /// 根據條件查詢工作
-    /// </summary>
-    public async Task<List<RecordedMediaFile>> GetByConditionAsync(
-        Expression<Func<RecordedMediaFile, bool>> predicate,
-        bool includeRelatedData = false)
-    {
-        var query = context.RecordedMediaFile.AsNoTracking().Where(predicate);
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Meeting);
-        }
-
-        return await query.ToListAsync();
-    }
-
-    /// <summary>
     /// 分頁查詢工作
     /// </summary>
-    public async Task<(List<RecordedMediaFile> Items, int TotalCount)> GetPagedAsync(
-        int pageIndex,
-        int pageSize,
-        Expression<Func<RecordedMediaFile, bool>>? predicate = null,
+    public async Task<PagedResult<RecordedMediaFile>> GetPagedAsync(
+        RecordedMediaFileSearchRequestDto request,
         bool includeRelatedData = false)
     {
         var query = context.RecordedMediaFile.AsNoTracking().AsQueryable();
+
+        #region 建立過濾條件
+        Expression<Func<RecordedMediaFile, bool>>? predicate = null;
+
+        if (request.MeetingId.HasValue)
+        {
+            predicate = p => p.MeetingId == request.MeetingId.Value;
+        }
+
+        #endregion 
 
         if (predicate != null)
         {
@@ -88,16 +63,25 @@ public class RecordedMediaFileRepository
         if (includeRelatedData)
         {
             query = query
-                .Include(p => p.Meeting);
+                .Include(p => p.Meeting)
+                ;
         }
 
         var items = await query
-            .OrderByDescending(p => p.CreatedAt)
-            .Skip((pageIndex - 1) * pageSize)
-            .Take(pageSize)
+            .OrderByDescending(p => p.UpdatedAt)
+            .Skip((request.PageIndex - 1) * request.PageSize)
+            .Take(request.PageSize)
             .ToListAsync();
 
-        return (items, totalCount);
+        PagedResult<RecordedMediaFile> pagedResult = new()
+        {
+            Items = items,
+            PageIndex = request.PageIndex,
+            PageSize = request.PageSize,
+            TotalCount = totalCount
+        };
+
+        return pagedResult;
     }
 
     /// <summary>

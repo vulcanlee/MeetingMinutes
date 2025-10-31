@@ -21,24 +21,6 @@ public class ProjectRepository
     #region 查詢方法
 
     /// <summary>
-    /// 取得所有專案(包含相關資料)
-    /// </summary>
-    public async Task<List<Project>> GetAllAsync(bool includeRelatedData = false)
-    {
-        var query = context.Project.AsNoTracking().AsQueryable();
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Task)
-                .Include(p => p.GanttChart)
-                .Include(p => p.Meeting);
-        }
-
-        return await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
-    }
-
-    /// <summary>
     /// 根據 ID 取得專案
     /// </summary>
     public async Task<Project?> GetByIdAsync(int id, bool includeRelatedData = false)
@@ -57,61 +39,6 @@ public class ProjectRepository
         }
 
         return await query.FirstOrDefaultAsync(p => p.Id == id);
-    }
-
-    /// <summary>
-    /// 根據條件查詢專案
-    /// </summary>
-    public async Task<List<Project>> GetByConditionAsync(
-        Expression<Func<Project, bool>> predicate,
-        bool includeRelatedData = false)
-    {
-        var query = context.Project.AsNoTracking().Where(predicate);
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Task)
-                .Include(p => p.GanttChart)
-                .Include(p => p.Meeting);
-        }
-
-        return await query.ToListAsync();
-    }
-
-    /// <summary>
-    /// 分頁查詢專案
-    /// </summary>
-    public async Task<(List<Project> Items, int TotalCount)> GetPagedAsync(
-        int pageIndex,
-        int pageSize,
-        Expression<Func<Project, bool>>? predicate = null,
-        bool includeRelatedData = false)
-    {
-        var query = context.Project.AsNoTracking().AsQueryable();
-
-        if (predicate != null)
-        {
-            query = query.Where(predicate);
-        }
-
-        var totalCount = await query.CountAsync();
-
-        if (includeRelatedData)
-        {
-            query = query
-                .Include(p => p.Task)
-                .Include(p => p.GanttChart)
-                .Include(p => p.Meeting);
-        }
-
-        var items = await query
-            .OrderByDescending(p => p.CreatedAt)
-            .Skip((pageIndex - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        return (items, totalCount);
     }
 
     public async Task<PagedResult<Project>> GetPagedAsync(
@@ -261,6 +188,7 @@ public class ProjectRepository
     {
         project.CreatedAt = DateTime.Now;
         project.UpdatedAt = DateTime.Now;
+        project.GanttChart = null; // 新增專案時不建立甘特圖   
 
         await context.Project.AddAsync(project);
         await context.SaveChangesAsync();
@@ -278,6 +206,7 @@ public class ProjectRepository
         {
             project.CreatedAt = now;
             project.UpdatedAt = now;
+            project.GanttChart = null; // 新增專案時不建立甘特圖   
         }
 
         await context.Project.AddRangeAsync(projects);
@@ -301,6 +230,7 @@ public class ProjectRepository
 
         project.UpdatedAt = DateTime.Now;
         project.CreatedAt = existingProject.CreatedAt; // 保留原建立時間
+        project.GanttChart = null; // 新增專案時不建立甘特圖   
 
         context.Entry(existingProject).CurrentValues.SetValues(project);
         await context.SaveChangesAsync();
